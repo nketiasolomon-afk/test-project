@@ -1,11 +1,11 @@
 import { DeclineNotice, DispatchStateChip, OverrideFlag, PriorityChip, ResponseOverdueChip } from '@/components/dispatch/chips';
 import { formatDateTime } from '@/lib/format';
 import { type Ticket } from '@/types/fuelops';
-import { CirclePlay, ClipboardCheck, Clock, HardHat, type LucideIcon, Phone, ThumbsUp, UserRound } from 'lucide-react';
+import { CirclePlay, ClipboardCheck, Clock, HardHat, type IconType, Phone, ThumbsUp, UserRound } from '@/components/icons';
 
 /** Who's coming, whether they've accepted, and when each step happened. */
 export function TicketAssignmentPanel({ ticket }: { ticket: Ticket }) {
-    const rows: [LucideIcon, string, string][] = [[HardHat, 'Technician', ticket.assignee?.fullName || 'Not assigned yet']];
+    const rows: [IconType, string, string][] = [[HardHat, 'Technician', ticket.assignee?.fullName || 'Not assigned yet']];
     if (ticket.assignee?.phone) rows.push([Phone, 'Phone', ticket.assignee.phone]);
     if (ticket.assignedBy) rows.push([UserRound, 'Assigned by', ticket.assignedBy.fullName]);
     if (ticket.assignedAt) rows.push([Clock, 'Assigned', formatDateTime(ticket.assignedAt)]);

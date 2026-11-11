@@ -6,7 +6,7 @@ import { formatDate, type Tone } from '@/lib/format';
 import { jobCards } from '@/lib/fuelops-api';
 import { type SharedData } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
-import { ClipboardList } from 'lucide-react';
+import { ClipboardList } from '@/components/icons';
 
 function statusTone(status: string): Tone {
     const normalized = status.toUpperCase();

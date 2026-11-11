@@ -1,52 +1,29 @@
-import { notifications } from '@/lib/fuelops-api';
-import { Link, usePage } from '@inertiajs/react';
-import { Bell } from 'lucide-react';
-import { useEffect, useState } from 'react';
-
-const POLL_INTERVAL_MS = 60_000;
+import { Bell, BellRing } from '@/components/icons';
+import { useUnreadNotifications } from '@/hooks/use-unread-notifications';
+import { cn } from '@/lib/utils';
+import { Link } from '@inertiajs/react';
 
 /**
- * The header's link to the notifications inbox, with the unread count. The web has no
- * push channel, so the count is polled while the tab is visible.
+ * The glass bell used on blue surfaces (the header and the Home welcome card), with
+ * a red unread badge, as on the phone app.
  */
-export function NotificationBell() {
-    const [unreadCount, setUnreadCount] = useState(0);
-    const { url } = usePage();
-
-    useEffect(() => {
-        let cancelled = false;
-
-        const load = async () => {
-            if (document.visibilityState !== 'visible') return;
-            try {
-                const result = await notifications.list(true);
-                if (!cancelled) setUnreadCount(result.unreadCount);
-            } catch {
-                // Keep the last known count; the bell still opens the list.
-            }
-        };
-
-        load();
-        const timer = window.setInterval(load, POLL_INTERVAL_MS);
-        document.addEventListener('visibilitychange', load);
-        return () => {
-            cancelled = true;
-            window.clearInterval(timer);
-            document.removeEventListener('visibilitychange', load);
-        };
-        // Reloaded on navigation: opening items or "Mark all read" changes the count.
-    }, [url]);
+export function NotificationBell({ shape = 'circle', className }: { shape?: 'circle' | 'tile'; className?: string }) {
+    const unreadCount = useUnreadNotifications();
 
     return (
         <Link
             href={route('notifications.index')}
-            className="hover:bg-accent relative rounded-md p-2"
+            className={cn(
+                'relative flex size-10 shrink-0 items-center justify-center text-white transition-colors hover:bg-white/25 focus-visible:ring-2 focus-visible:ring-white/70 focus-visible:outline-none',
+                shape === 'circle' ? 'rounded-full bg-white/16' : 'rounded-xl border border-white/22 bg-white/14',
+                className,
+            )}
             aria-label={unreadCount > 0 ? `Notifications, ${unreadCount} unread` : 'Notifications'}
             title="Notifications"
         >
-            <Bell className="size-5" />
+            {unreadCount > 0 ? <BellRing className="size-[21px]" /> : <Bell className="size-[21px]" />}
             {unreadCount > 0 && (
-                <span className="absolute -top-0.5 -right-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-600 px-1 text-[10px] font-bold text-white">
+                <span className="absolute -top-1.5 -right-1.5 flex h-5 min-w-5 items-center justify-center rounded-full border-2 border-[var(--header)] bg-red-600 px-1 text-[10.5px] leading-none font-bold text-white">
                     {unreadCount > 99 ? '99+' : unreadCount}
                 </span>
             )}

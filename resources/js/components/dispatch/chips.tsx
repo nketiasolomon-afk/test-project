@@ -1,7 +1,7 @@
 import { Pill } from '@/components/fuelops/pill';
 import { ageLabel, availabilityLabel, availabilityTone, dispatchStateLabel, dispatchStateTone } from '@/lib/format';
 import { type TicketDecline } from '@/types/fuelops';
-import { Ban, CheckCircle2, Flag, HardHat, ThumbsDown, TimerOff, TriangleAlert, Video, Wrench } from 'lucide-react';
+import { Ban, CheckCircle2, Flag, HardHat, ThumbsDown, TimerOff, TriangleAlert, Video, Wrench } from '@/components/icons';
 
 /** Shared pieces of the ticket assignment & acceptance flow UI. */
 

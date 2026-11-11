@@ -6,7 +6,7 @@ import { useApiQuery } from '@/hooks/use-api-query';
 import { requisitions } from '@/lib/fuelops-api';
 import { cn } from '@/lib/utils';
 import { type CctvRequisition } from '@/types/fuelops';
-import { Ban, CalendarDays, Check, Package, RefreshCw, UserRound } from 'lucide-react';
+import { Ban, CalendarDays, Check, Package, RefreshCw, UserRound } from '@/components/icons';
 import { requisitionStatusLabel, requisitionStatusTone } from './index';
 
 /** 0 = Requested, 1 = Approved, 2 = Issued. */

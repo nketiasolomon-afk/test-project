@@ -9,7 +9,7 @@ import { timeAgo } from '@/lib/format';
 import { stations } from '@/lib/fuelops-api';
 import { cn } from '@/lib/utils';
 import { type StationOption } from '@/types/fuelops';
-import { Copy, Crosshair, Fuel, LocateFixed, MapPin, Navigation } from 'lucide-react';
+import { Copy, Crosshair, Fuel, LocateFixed, MapPin, Navigation } from '@/components/icons';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
 /** Accra, until a real fix is obtained. */

@@ -9,7 +9,7 @@ import { inventoryRequests, notifications } from '@/lib/fuelops-api';
 import { cn } from '@/lib/utils';
 import { type AppNotification } from '@/types/fuelops';
 import { router } from '@inertiajs/react';
-import { Bell, BellOff, CheckCheck, TriangleAlert } from 'lucide-react';
+import { Bell, BellOff, CheckCheck, TriangleAlert } from '@/components/icons';
 import { useEffect, useState } from 'react';
 
 /** The structured contents of a "Your items are ready to collect" notification. */

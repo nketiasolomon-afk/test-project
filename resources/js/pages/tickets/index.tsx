@@ -36,7 +36,7 @@ import {
     UsersRound,
     Video,
     Wrench,
-} from 'lucide-react';
+} from '@/components/icons';
 import { useMemo, useState } from 'react';
 
 type View = 'mine' | 'cluster' | 'all';

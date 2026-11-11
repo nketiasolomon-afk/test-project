@@ -1,7 +1,7 @@
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { errorText } from '@/lib/api';
-import { LoaderCircle, Search } from 'lucide-react';
+import { LoaderCircle, Search } from '@/components/icons';
 import { useEffect, useState } from 'react';
 
 /**

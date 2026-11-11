@@ -1,18 +1,32 @@
+import { type IconType } from '@/components/icons';
 import { type Tone } from '@/lib/format';
 import { cn } from '@/lib/utils';
-import { type LucideIcon } from 'lucide-react';
+
+/** Badge colours, matching the phone's status badges (text in the colour on a 12% tint). */
+export const TONE_COLORS: Record<Tone, string> = {
+    blue: '#2196F3',
+    indigo: '#4F46E5',
+    amber: '#F59E0B',
+    orange: '#FFA726',
+    red: '#EF4444',
+    green: '#43A047',
+    emerald: '#059669',
+    purple: '#6D28D9',
+    teal: '#0F766E',
+    slate: '#64748B',
+};
 
 const TONES: Record<Tone, string> = {
-    blue: 'border-blue-600/30 bg-blue-600/10 text-blue-800 dark:text-blue-300',
-    indigo: 'border-indigo-500/30 bg-indigo-500/10 text-indigo-800 dark:text-indigo-300',
-    amber: 'border-amber-500/40 bg-amber-500/15 text-amber-800 dark:text-amber-300',
-    orange: 'border-orange-500/35 bg-orange-500/10 text-orange-800 dark:text-orange-300',
-    red: 'border-red-600/30 bg-red-600/10 text-red-800 dark:text-red-300',
-    green: 'border-green-600/30 bg-green-600/10 text-green-800 dark:text-green-300',
-    emerald: 'border-emerald-700/30 bg-emerald-700/10 text-emerald-800 dark:text-emerald-300',
-    purple: 'border-violet-600/30 bg-violet-600/10 text-violet-800 dark:text-violet-300',
-    teal: 'border-teal-600/30 bg-teal-600/10 text-teal-800 dark:text-teal-300',
-    slate: 'border-slate-500/30 bg-slate-500/10 text-slate-700 dark:text-slate-300',
+    blue: 'text-[#1976D2] dark:text-[#64B5F6]',
+    indigo: 'text-indigo-700 dark:text-indigo-300',
+    amber: 'text-amber-700 dark:text-amber-300',
+    orange: 'text-[#E65100] dark:text-[#FFB74D]',
+    red: 'text-red-600 dark:text-red-400',
+    green: 'text-[#2E7D32] dark:text-[#81C784]',
+    emerald: 'text-emerald-700 dark:text-emerald-300',
+    purple: 'text-violet-700 dark:text-violet-300',
+    teal: 'text-teal-700 dark:text-teal-300',
+    slate: 'text-slate-600 dark:text-slate-300',
 };
 
 /** A small coloured label for a status, priority or tag. */
@@ -24,7 +38,7 @@ export function Pill({
     title,
 }: {
     tone?: Tone;
-    icon?: LucideIcon;
+    icon?: IconType;
     className?: string;
     children: React.ReactNode;
     title?: string;
@@ -32,13 +46,10 @@ export function Pill({
     return (
         <span
             title={title}
-            className={cn(
-                'inline-flex items-center gap-1 rounded-md border px-2 py-0.5 text-xs font-semibold whitespace-nowrap',
-                TONES[tone],
-                className,
-            )}
+            className={cn('inline-flex items-center gap-1 rounded-lg px-2 py-1 text-[11px] leading-none font-bold whitespace-nowrap', TONES[tone], className)}
+            style={{ backgroundColor: `color-mix(in srgb, ${TONE_COLORS[tone]} 12%, transparent)` }}
         >
-            {Icon && <Icon className="size-3 shrink-0" />}
+            {Icon && <Icon className="size-3.5 shrink-0" />}
             {children}
         </span>
     );

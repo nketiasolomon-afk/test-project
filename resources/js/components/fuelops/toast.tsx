@@ -1,5 +1,5 @@
 import { cn } from '@/lib/utils';
-import { CheckCircle2, Info, X, XCircle } from 'lucide-react';
+import { CheckCircle2, Info, X, XCircle } from '@/components/icons';
 import { useSyncExternalStore } from 'react';
 
 type ToastKind = 'success' | 'error' | 'info';
@@ -58,7 +58,7 @@ export function Toaster() {
     const current = useSyncExternalStore(subscribe, () => items);
 
     return (
-        <div className="pointer-events-none fixed inset-x-0 bottom-4 z-[100] flex flex-col items-center gap-2 px-4" aria-live="polite">
+        <div className="pointer-events-none fixed inset-x-0 bottom-[calc(104px+env(safe-area-inset-bottom))] z-[100] lg:bottom-4 flex flex-col items-center gap-2 px-4" aria-live="polite">
             {current.map((item) => {
                 const Icon = ICONS[item.kind];
                 return (

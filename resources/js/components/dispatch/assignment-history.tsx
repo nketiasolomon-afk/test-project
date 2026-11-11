@@ -10,14 +10,14 @@ import {
     CircleX,
     ClipboardCheck,
     LoaderCircle,
-    type LucideIcon,
+    type IconType,
     RotateCcw,
     ThumbsDown,
     ThumbsUp,
     TimerOff,
     TriangleAlert,
     UserPlus,
-} from 'lucide-react';
+} from '@/components/icons';
 
 function eventTitle(event: TicketEvent): string {
     const tech = event.technicianName || 'technician';
@@ -57,7 +57,7 @@ function eventTitle(event: TicketEvent): string {
     }
 }
 
-const EVENT_ICONS: Record<string, LucideIcon> = {
+const EVENT_ICONS: Record<string, IconType> = {
     ASSIGN: UserPlus,
     REASSIGN: UserPlus,
     OVERRIDE_ASSIGN: TriangleAlert,

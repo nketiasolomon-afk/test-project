@@ -15,7 +15,7 @@ import { inventoryRequests } from '@/lib/fuelops-api';
 import { type SharedData } from '@/types';
 import { type ClusterInventoryRequest } from '@/types/fuelops';
 import { usePage } from '@inertiajs/react';
-import { ClipboardCheck, Copy, LoaderCircle } from 'lucide-react';
+import { ClipboardCheck, Copy, LoaderCircle } from '@/components/icons';
 import { useEffect, useState } from 'react';
 
 function statusTone(status: string): Tone {

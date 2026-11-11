@@ -1,19 +1,26 @@
-import { AppContent } from '@/components/app-content';
-import { AppShell } from '@/components/app-shell';
+import { AppHeader, type HeaderProps } from '@/components/app-header';
 import { AppSidebar } from '@/components/app-sidebar';
-import { AppSidebarHeader } from '@/components/app-sidebar-header';
+import { BottomNav } from '@/components/bottom-nav';
 import { Toaster } from '@/components/fuelops/toast';
-import { type BreadcrumbItem } from '@/types';
 
-export default function AppSidebarLayout({ children, breadcrumbs = [] }: { children: React.ReactNode; breadcrumbs?: BreadcrumbItem[] }) {
+/**
+ * The signed-in shell. Desktop: white side menu beside the blue header and content.
+ * Mobile: blue header on top and the phone's bottom tab bar. The StarOil watermark
+ * sits behind the content on every page.
+ */
+export default function AppSidebarLayout({ children, header }: { children: React.ReactNode; header: HeaderProps }) {
     return (
-        <AppShell variant="sidebar">
+        <div className="bg-background flex min-h-dvh w-full">
             <AppSidebar />
-            <AppContent variant="sidebar">
-                <AppSidebarHeader breadcrumbs={breadcrumbs} />
-                {children}
-            </AppContent>
+            <div className="flex min-w-0 flex-1 flex-col">
+                <AppHeader {...header} />
+                <main className="relative flex flex-1 flex-col pb-[calc(92px+env(safe-area-inset-bottom))] lg:pb-0">
+                    <div className="staroil-watermark" aria-hidden="true" />
+                    <div className="relative z-[1] flex flex-1 flex-col">{children}</div>
+                </main>
+            </div>
+            <BottomNav />
             <Toaster />
-        </AppShell>
+        </div>
     );
 }

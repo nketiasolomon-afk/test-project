@@ -2,7 +2,7 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { errorText } from '@/lib/api';
-import { LoaderCircle } from 'lucide-react';
+import { LoaderCircle } from '@/components/icons';
 import { useEffect, useState } from 'react';
 
 interface ActionDialogProps {

@@ -10,7 +10,7 @@ import { ApiError, errorText } from '@/lib/api';
 import { availabilityLabel, busyTicketSummary, DISPATCH_HELD_STATES } from '@/lib/format';
 import { dispatch } from '@/lib/fuelops-api';
 import { type DispatchReason, type TechnicianAvailability, type Ticket } from '@/types/fuelops';
-import { LoaderCircle, TriangleAlert } from 'lucide-react';
+import { LoaderCircle, TriangleAlert } from '@/components/icons';
 import { useEffect, useState } from 'react';
 
 /**

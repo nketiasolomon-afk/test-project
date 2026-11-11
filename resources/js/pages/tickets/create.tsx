@@ -9,7 +9,7 @@ import { useApiQuery } from '@/hooks/use-api-query';
 import { errorText } from '@/lib/api';
 import { stations, tickets } from '@/lib/fuelops-api';
 import { router } from '@inertiajs/react';
-import { LoaderCircle, Paperclip, X } from 'lucide-react';
+import { LoaderCircle, Paperclip, X } from '@/components/icons';
 import { FormEvent, useEffect, useRef, useState } from 'react';
 
 const CATEGORIES = [

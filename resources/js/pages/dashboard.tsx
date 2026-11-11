@@ -1,165 +1,207 @@
+import { IconTile } from '@/components/fuelops/icon-tile';
+import { ModuleTile } from '@/components/fuelops/module-tile';
 import { Page, Section } from '@/components/fuelops/page';
 import { EmptyState } from '@/components/fuelops/states';
-import { Skeleton } from '@/components/ui/skeleton';
-import { useApiQuery } from '@/hooks/use-api-query';
-import { timeAgo } from '@/lib/format';
-import { dashboards } from '@/lib/fuelops-api';
-import { cn } from '@/lib/utils';
-import { type SharedData } from '@/types';
-import { Link, usePage } from '@inertiajs/react';
 import {
-    BarChart3,
-    CircleCheck,
+    Assignment,
+    BadgeCheck,
+    CheckCircle2,
+    CirclePlusFilled,
     CircleX,
-    ClipboardCheck,
-    ClipboardList,
+    Engineering,
+    Gauge,
+    Hourglass,
     Inbox,
     Info,
     Lock,
-    type LucideIcon,
+    OilBarrel,
     Package,
-    PackagePlus,
-    CirclePlus,
-    Hourglass,
+    PendingActions,
     Repeat,
     ShieldAlert,
-    Store,
-    Ticket,
-    Video,
-    Warehouse,
-    BadgeCheck,
-} from 'lucide-react';
+    TriangleAlert,
+    Fuel,
+    type IconType,
+} from '@/components/icons';
+import { NotificationBell } from '@/components/notification-bell';
+import { useApiQuery } from '@/hooks/use-api-query';
+import { DISPATCH_HELD_STATES, timeAgo } from '@/lib/format';
+import { dashboards } from '@/lib/fuelops-api';
+import { moduleGroupsFor } from '@/lib/navigation';
+import { type SharedData, type User } from '@/types';
+import { usePage } from '@inertiajs/react';
 
-interface Module {
-    title: string;
-    subtitle: string;
-    href: string;
-    icon: LucideIcon;
-    accent: string;
-}
+const WAITING_STATES = ['NEW', 'DECLINED', 'REOPENED'];
 
-function activityVisual(type: string): [LucideIcon, string] {
+/** Icon and accent for a recent-activity entry, as the phone app colours them. */
+function activityVisual(type: string): [IconType, string] {
     switch (type) {
         case 'reported':
-            return [CirclePlus, 'text-teal-700'];
+            return [CirclePlusFilled, '#0F766E'];
         case 'started':
         case 'progress':
-            return [Hourglass, 'text-primary'];
+            return [PendingActions, '#2178BD'];
         case 'resolved':
-            return [CircleCheck, 'text-emerald-600'];
+            return [CheckCircle2, '#059669'];
         case 'station-approved':
         case 'validated':
         case 'part-approved':
         case 'part-issued':
-            return [BadgeCheck, 'text-emerald-600'];
+            return [BadgeCheck, '#059669'];
         case 'station-rejected':
-            return [CircleX, 'text-red-600'];
+            return [CircleX, '#DC2626'];
         case 'escalated':
-            return [ShieldAlert, 'text-red-600'];
+            return [ShieldAlert, '#DC2626'];
         case 'force-closed':
-            return [Lock, 'text-violet-700'];
+            return [Lock, '#6D28D9'];
         case 'reassigned':
-            return [Repeat, 'text-primary'];
+            return [Repeat, '#2178BD'];
         case 'part-requested':
-            return [Package, 'text-amber-700'];
+            return [Package, '#B45309'];
         default:
-            return [Info, 'text-muted-foreground'];
+            return [Info, '#757575'];
     }
+}
+
+type StatsAudience = 'technician' | 'cluster' | 'operations';
+
+function statsAudience(user: User): StatsAudience {
+    if (user.role === 'Operations Admin') return 'operations';
+    if (user.isClusterLeader || user.role === 'Cluster Leader' || user.role === 'Cluster Engineer') return 'cluster';
+    return 'technician';
+}
+
+function roleLabel(user: User): string {
+    if (user.isClusterLeader) return 'Cluster Leader';
+    return user.role || 'Technician';
 }
 
 export default function Dashboard() {
     const { auth } = usePage<SharedData>().props;
     const user = auth.user;
+    const audience = statsAudience(user);
+
     const overview = useApiQuery(() => dashboards.home());
+    const cluster = useApiQuery(() => dashboards.cluster(), [], { enabled: audience === 'cluster' });
+    const operations = useApiQuery(() => dashboards.operations(), [], { enabled: audience === 'operations' });
 
-    const modules: Module[] = [
-        { title: 'Tickets', subtitle: 'View & manage your tickets', href: '/tickets', icon: Ticket, accent: 'text-primary' },
-        { title: 'CCTV Requisition', subtitle: 'Request CCTV and network equipment for a job', href: '/requisitions', icon: Video, accent: 'text-rose-700' },
-        { title: 'Inventory Request', subtitle: 'Request general stock from the warehouse', href: '/inventory/requests', icon: PackagePlus, accent: 'text-amber-700' },
-        { title: 'Inventory', subtitle: 'Stock on hand & usage by technician', href: '/inventory', icon: Warehouse, accent: 'text-teal-700' },
-        { title: 'My Reports', subtitle: 'Your activity, job cards & usage', href: '/reports', icon: BarChart3, accent: 'text-violet-700' },
-    ];
-    // Cluster-level modules are absent for a Technician, not merely disabled. Someone covering
-    // for a leader (canDispatch) gets only the queue.
-    if (!user.isClusterLeader && user.canDispatch) {
-        modules.push({ title: 'Assignment Queue', subtitle: "You're covering dispatch for a Cluster Leader", href: '/dispatch/queue', icon: Inbox, accent: 'text-lime-700' });
-    }
-    if (user.isClusterLeader) {
-        modules.push(
-            { title: 'Assignment Queue', subtitle: 'Assign new, declined & reopened tickets', href: '/dispatch/queue', icon: Inbox, accent: 'text-lime-700' },
-            { title: 'Team Requests', subtitle: "Approve & issue your cluster's stock requests", href: '/cluster/team-requests', icon: ClipboardCheck, accent: 'text-emerald-600' },
-            { title: 'Mini Store', subtitle: 'Cluster stock & restock requests', href: '/cluster/mini-store', icon: Store, accent: 'text-orange-700' },
-            { title: 'Cluster Job Cards', subtitle: 'Work submitted across your team', href: '/cluster/job-cards', icon: ClipboardList, accent: 'text-sky-700' },
-        );
-    }
+    const stats: { label: string; value?: number; icon: IconType; loading: boolean }[] =
+        audience === 'cluster'
+            ? [
+                  {
+                      label: 'Unassigned',
+                      value: cluster.data?.outstandingTickets.filter((t) => WAITING_STATES.includes(t.dispatchState ?? '')).length,
+                      icon: Inbox,
+                      loading: cluster.isLoading,
+                  },
+                  {
+                      label: 'In Progress',
+                      value: cluster.data?.outstandingTickets.filter((t) => DISPATCH_HELD_STATES.includes(t.dispatchState ?? '')).length,
+                      icon: Engineering,
+                      loading: cluster.isLoading,
+                  },
+                  { label: 'Outstanding', value: cluster.data?.outstandingTickets.length, icon: Hourglass, loading: cluster.isLoading },
+              ]
+            : audience === 'operations'
+              ? [
+                    { label: 'Outstanding', value: operations.data?.totalOutstanding, icon: Gauge, loading: operations.isLoading },
+                    { label: 'Escalated', value: operations.data?.escalatedTickets, icon: TriangleAlert, loading: operations.isLoading },
+                    { label: 'Nozzles Down', value: operations.data?.nozzlesNotWorking, icon: Fuel, loading: operations.isLoading },
+                ]
+              : [
+                    { label: 'Active', value: overview.data?.activeIssues, icon: Assignment, loading: overview.isLoading },
+                    { label: 'Pending', value: overview.data?.pendingIssues, icon: PendingActions, loading: overview.isLoading },
+                    { label: 'Done', value: overview.data?.completedIssues, icon: CheckCircle2, loading: overview.isLoading },
+                ];
 
-    const stats: [string, number | undefined][] = [
-        ['Active', overview.data?.activeIssues],
-        ['Pending', overview.data?.pendingIssues],
-        ['Done', overview.data?.completedIssues],
-    ];
+    // Quick Access mirrors the phone's Home: the modules without a bottom tab, grouped like the side menu.
+    const tabUrls = ['/dashboard', '/location', '/profile', '/notifications'];
+    const groups = moduleGroupsFor(user)
+        .map((group) => ({ ...group, items: group.items.filter((item) => !tabUrls.includes(item.url)) }))
+        .filter((group) => group.items.length > 0);
+    const clusterGroup = groups.find((group) => group.title === 'Cluster');
+    const quickAccess = groups.filter((group) => group !== clusterGroup).flatMap((group) => group.items);
+
+    const subtitle = audience === 'cluster' ? 'Cluster Leader Dashboard' : audience === 'operations' ? 'Operations Dashboard' : 'Technician Dashboard';
 
     return (
-        <Page title="Star Technician" description={user.isClusterLeader ? 'Cluster Leader Dashboard' : 'Technician Dashboard'}>
-            <div className="relative overflow-hidden rounded-2xl bg-[#2178bd] p-6 text-white shadow-lg">
-                <div className="pointer-events-none absolute -top-12 -right-10 size-40 rounded-full bg-white/10 blur-2xl" />
-                <p className="text-sm text-white/70">Welcome back!</p>
-                <p className="text-lg font-bold">{user.fullName || user.username}</p>
-                <p className="text-sm text-white/80">{user.isClusterLeader ? 'Cluster Leader' : 'Technician'}</p>
-                <div className="mt-5 grid grid-cols-3 gap-4 border-t border-white/15 pt-4 text-center">
-                    {stats.map(([label, value]) => (
-                        <div key={label}>
-                            <p className="text-2xl font-bold">{overview.isLoading ? '-' : (value ?? 0)}</p>
-                            <p className="text-xs text-white/70">{label}</p>
+        <Page title="Star Technician" description={subtitle} brand hideBell documentTitle="Home">
+            {/* Welcome card */}
+            <div className="relative overflow-hidden rounded-3xl bg-[var(--brand-blue)] p-6 text-white shadow-[0_10px_24px_rgb(33_120_189/0.3)]">
+                <div
+                    className="pointer-events-none absolute -top-12 -right-10 size-40 rounded-full"
+                    style={{ background: 'radial-gradient(circle, rgb(255 255 255 / 0.08), transparent 70%)' }}
+                    aria-hidden="true"
+                />
+                <div className="relative flex items-center gap-3.5">
+                    <span className="flex size-12 shrink-0 items-center justify-center rounded-[15px] border border-white/22 bg-white/14">
+                        <OilBarrel className="text-brand-yellow size-[25px]" />
+                    </span>
+                    <div className="min-w-0 flex-1">
+                        <p className="text-sm text-white/70">Welcome back!</p>
+                        <p className="truncate text-lg leading-tight font-bold tracking-[-0.2px]">{user.fullName || user.username}</p>
+                        <p className="truncate text-xs text-white/70">{roleLabel(user)}</p>
+                    </div>
+                    <NotificationBell shape="tile" />
+                </div>
+                <div className="relative mt-5 mb-[18px] h-px bg-white/12" />
+                <div className="relative grid grid-cols-3 text-center">
+                    {stats.map((stat) => (
+                        <div key={stat.label} className="flex flex-col items-center">
+                            <span className="flex size-10 items-center justify-center rounded-xl border border-white/16 bg-white/12">
+                                <stat.icon className="size-5" />
+                            </span>
+                            <span className="mt-2 text-xl leading-tight font-bold">{stat.loading ? '-' : (stat.value ?? 0)}</span>
+                            <span className="mt-0.5 text-xs text-white/70">{stat.label}</span>
                         </div>
                     ))}
                 </div>
             </div>
 
             <Section title="Quick Access">
-                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                    {modules.map((module) => (
-                        <Link
-                            key={module.title}
-                            href={module.href}
-                            prefetch
-                            className="bg-card hover:bg-accent flex items-center gap-3 rounded-xl border p-4 shadow-xs transition-colors"
-                        >
-                            <span className={cn('bg-muted flex size-11 shrink-0 items-center justify-center rounded-lg', module.accent)}>
-                                <module.icon className="size-5" />
-                            </span>
-                            <span className="min-w-0">
-                                <span className="block font-semibold">{module.title}</span>
-                                <span className="text-muted-foreground block text-xs">{module.subtitle}</span>
-                            </span>
-                        </Link>
+                <div className="grid gap-3 lg:grid-cols-2">
+                    {quickAccess.map((module) => (
+                        <ModuleTile key={module.url} title={module.title} subtitle={module.subtitle} href={module.url} icon={module.icon} accent={module.accent} />
                     ))}
                 </div>
             </Section>
 
+            {clusterGroup && (
+                <Section title="Cluster">
+                    <div className="grid gap-3 lg:grid-cols-2">
+                        {clusterGroup.items.map((module) => (
+                            <ModuleTile key={module.url} title={module.title} subtitle={module.subtitle} href={module.url} icon={module.icon} accent={module.accent} />
+                        ))}
+                    </div>
+                </Section>
+            )}
+
             <Section title="Recent Activity">
                 {overview.isLoading ? (
-                    <div className="space-y-2">
+                    <div className="space-y-2.5">
                         {[0, 1, 2].map((i) => (
-                            <Skeleton key={i} className="h-16 rounded-xl" />
+                            <div key={i} className="bg-card relative h-[70px] overflow-hidden rounded-[14px] border">
+                                <span className="animate-shimmer-sweep absolute inset-0 bg-gradient-to-r from-transparent via-white/80 to-transparent dark:via-white/6" />
+                            </div>
                         ))}
                     </div>
                 ) : (overview.data?.recentActivity ?? []).length === 0 ? (
-                    <EmptyState title="No recent activity yet." description={overview.error ?? undefined} />
+                    <EmptyState title="No recent activity yet" description={overview.error ?? 'Your latest ticket updates will show here.'} className="py-6" />
                 ) : (
-                    <ul className="space-y-2">
+                    <ul className="space-y-2.5">
                         {overview.data!.recentActivity.slice(0, 6).map((activity, index) => {
                             const [Icon, color] = activityVisual(activity.type);
                             return (
-                                <li key={index} className="bg-card flex items-center gap-3 rounded-xl border p-3 shadow-xs">
-                                    <span className={cn('bg-muted flex size-10 shrink-0 items-center justify-center rounded-lg', color)}>
-                                        <Icon className="size-5" />
+                                <li key={index} className="bg-card shadow-card flex overflow-hidden rounded-[14px] border">
+                                    <span className="w-[3px] shrink-0" style={{ backgroundColor: color }} aria-hidden="true" />
+                                    <span className="flex min-w-0 flex-1 items-center gap-3.5 p-3.5">
+                                        <IconTile icon={Icon} color={color} className="size-[42px] [&>svg]:size-[22px]" />
+                                        <span className="min-w-0 flex-1">
+                                            <span className="block truncate text-sm font-semibold">{activity.title}</span>
+                                            <span className="text-muted-foreground block truncate text-xs">{activity.subtitle}</span>
+                                        </span>
+                                        <span className="text-muted-foreground/80 shrink-0 text-[11px]">{timeAgo(activity.occurredAt)}</span>
                                     </span>
-                                    <span className="min-w-0 flex-1">
-                                        <span className="block text-sm font-semibold">{activity.title}</span>
-                                        <span className="text-muted-foreground block truncate text-xs">{activity.subtitle}</span>
-                                    </span>
-                                    <span className="text-muted-foreground shrink-0 text-xs">{timeAgo(activity.occurredAt)}</span>
                                 </li>
                             );
                         })}

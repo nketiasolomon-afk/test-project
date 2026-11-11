@@ -13,7 +13,7 @@ import { dashboards, miniStore, myStock } from '@/lib/fuelops-api';
 import { type SharedData } from '@/types';
 import { type MiniStoreItem, type MyStock, type RestockRequest, type TechnicianStats } from '@/types/fuelops';
 import { usePage } from '@inertiajs/react';
-import { ChevronRight, CircleMinus, LoaderCircle, Package, RefreshCw, Wrench } from 'lucide-react';
+import { ChevronRight, CircleMinus, LoaderCircle, Package, RefreshCw, Wrench } from '@/components/icons';
 import { FormEvent, useState } from 'react';
 
 interface StockOverview {

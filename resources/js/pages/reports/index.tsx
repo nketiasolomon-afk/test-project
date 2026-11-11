@@ -9,7 +9,7 @@ import { formatDate, formatDateTime, formatQuantity, fromDateInputValue, timeAgo
 import { reports } from '@/lib/fuelops-api';
 import { cn } from '@/lib/utils';
 import { Link } from '@inertiajs/react';
-import { Activity, CheckCircle2, ChevronRight, ClipboardList, Hourglass, Package, Pencil, ShieldCheck } from 'lucide-react';
+import { Activity, CheckCircle2, ChevronRight, ClipboardList, Hourglass, Package, Pencil, ShieldCheck } from '@/components/icons';
 import { useState } from 'react';
 
 type Tab = 'activity' | 'job-cards' | 'items';

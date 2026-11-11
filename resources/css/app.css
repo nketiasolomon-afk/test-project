@@ -6,9 +6,51 @@
 
 @custom-variant dark (&:is(.dark *));
 
+@font-face {
+    font-family: 'Instrument Sans';
+    font-style: normal;
+    font-weight: 400 700;
+    font-display: swap;
+    src: url('../fonts/InstrumentSans-Variable.ttf') format('truetype');
+}
+
+/* The display face of the "Star Technician" brand title. */
+@font-face {
+    font-family: 'Orbitron';
+    font-style: normal;
+    font-weight: 400 900;
+    font-display: swap;
+    src: url('../fonts/Orbitron-Variable.ttf') format('truetype');
+}
+
 @theme {
     --font-sans:
         'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+    --font-brand: 'Orbitron', 'Instrument Sans', ui-sans-serif, sans-serif;
+
+    --color-brand-blue: var(--brand-blue);
+    --color-brand-yellow: var(--brand-yellow);
+    --color-brand-navy: var(--brand-navy);
+    --color-brand-ink: var(--brand-ink);
+    --color-header: var(--header);
+    --color-header-foreground: var(--header-foreground);
+    --color-nav: var(--nav);
+    --color-nav-foreground: var(--nav-foreground);
+
+    --radius-xl: calc(var(--radius) + 4px);
+    --radius-2xl: calc(var(--radius) + 10px);
+    --shadow-card: var(--card-shadow);
+
+    --animate-shimmer-sweep: shimmer-sweep 1.5s linear infinite;
+
+    @keyframes shimmer-sweep {
+        from {
+            translate: -100% 0;
+        }
+        to {
+            translate: 100% 0;
+        }
+    }
 
     --radius-lg: var(--radius);
     --radius-md: calc(var(--radius) - 2px);
@@ -77,76 +119,95 @@
 }
 
 :root {
-    --background: hsl(0, 0%, 100%);
-    --foreground: hsl(0, 0%, 3.9%);
-    --card: hsl(0, 0%, 100%);
-    --card-foreground: hsl(0, 0%, 3.9%);
-    --popover: hsl(0, 0%, 100%);
-    --popover-foreground: hsl(0, 0%, 3.9%);
-    --primary: hsl(207, 70%, 43%);
-    --primary-foreground: hsl(0, 0%, 98%);
-    --secondary: hsl(0, 0%, 96.1%);
-    --secondary-foreground: hsl(0, 0%, 9%);
-    --muted: hsl(0, 0%, 96.1%);
-    --muted-foreground: hsl(0, 0%, 45.1%);
-    --accent: hsl(0, 0%, 96.1%);
-    --accent-foreground: hsl(0, 0%, 9%);
-    --destructive: hsl(0, 84.2%, 60.2%);
-    --destructive-foreground: hsl(0, 0%, 98%);
-    --border: hsl(0, 0%, 92.8%);
-    --input: hsl(0, 0%, 89.8%);
-    --ring: hsl(207, 70%, 43%);
-    --chart-1: hsl(12, 76%, 61%);
-    --chart-2: hsl(173, 58%, 39%);
-    --chart-3: hsl(197, 37%, 24%);
-    --chart-4: hsl(43, 74%, 66%);
-    --chart-5: hsl(27, 87%, 67%);
-    --radius: 0.5rem;
+    /* Star Oil palette, from the mobile app's AppColors / AppTheme.light. */
+    --brand-blue: #2178bd;
     --brand-yellow: #fdcd21;
-    --brand-navy: #0b2e4f;
-    --sidebar-background: hsl(0, 0%, 98%);
-    --sidebar-foreground: hsl(240, 5.3%, 30%);
-    --sidebar-primary: hsl(211, 75%, 18%);
-    --sidebar-primary-foreground: hsl(0, 0%, 98%);
-    --sidebar-accent: hsl(0, 0%, 94%);
-    --sidebar-accent-foreground: hsl(0, 0%, 30%);
-    --sidebar-border: hsl(0, 0%, 91%);
-    --sidebar-ring: hsl(217.2, 91.2%, 59.8%);
+    --brand-navy: #15315e;
+    --brand-ink: #1a1a2e;
+
+    --background: #f8f9fe;
+    --foreground: #1a1a2e;
+    --card: #ffffff;
+    --card-foreground: #1a1a2e;
+    --popover: #ffffff;
+    --popover-foreground: #1a1a2e;
+    --primary: #2178bd;
+    --primary-foreground: #ffffff;
+    --secondary: #f5f7fa;
+    --secondary-foreground: #1a1a2e;
+    --muted: #f5f7fa;
+    --muted-foreground: #757575;
+    --accent: #edf4fa;
+    --accent-foreground: #1a1a2e;
+    --destructive: #dc2626;
+    --destructive-foreground: #ffffff;
+    --border: #ebebef;
+    --input: #fafafa;
+    --ring: #2178bd;
+    --chart-1: #2178bd;
+    --chart-2: #0f766e;
+    --chart-3: #b45309;
+    --chart-4: #6d28d9;
+    --chart-5: #be123c;
+    --radius: 14px;
+
+    /* App chrome: blue header, white side menu and bottom tab bar. */
+    --header: #2178bd;
+    --header-foreground: #ffffff;
+    --nav: #ffffff;
+    --nav-foreground: #424242;
+    --card-shadow: 0 4px 14px rgb(0 0 0 / 0.04);
+    --watermark: #2178bd;
+    --watermark-opacity: 0.05;
+
+    --sidebar-background: #ffffff;
+    --sidebar-foreground: #424242;
+    --sidebar-primary: #2178bd;
+    --sidebar-primary-foreground: #ffffff;
+    --sidebar-accent: rgb(33 120 189 / 0.1);
+    --sidebar-accent-foreground: #2178bd;
+    --sidebar-border: #ebebef;
+    --sidebar-ring: #2178bd;
 }
 
+/* The mobile app's AppTheme.dark. */
 .dark {
-    --background: hsl(0, 0%, 3.9%);
-    --foreground: hsl(0, 0%, 98%);
-    --card: hsl(0, 0%, 3.9%);
-    --card-foreground: hsl(0, 0%, 98%);
-    --popover: hsl(0, 0%, 3.9%);
-    --popover-foreground: hsl(0, 0%, 98%);
-    --primary: hsl(207, 75%, 52%);
-    --primary-foreground: hsl(0, 0%, 100%);
-    --secondary: hsl(0, 0%, 14.9%);
-    --secondary-foreground: hsl(0, 0%, 98%);
-    --muted: hsl(0, 0%, 6.9%);
-    --muted-foreground: hsl(0, 0%, 63.9%);
-    --accent: hsl(0, 0%, 14.9%);
-    --accent-foreground: hsl(0, 0%, 98%);
-    --destructive: hsl(0, 84%, 60%);
-    --destructive-foreground: hsl(0, 0%, 98%);
-    --border: hsl(0, 0%, 14.9%);
-    --input: hsl(0, 0%, 14.9%);
-    --ring: hsl(207, 75%, 52%);
-    --chart-1: hsl(220, 70%, 50%);
-    --chart-2: hsl(160, 60%, 45%);
-    --chart-3: hsl(30, 80%, 55%);
-    --chart-4: hsl(280, 65%, 60%);
-    --chart-5: hsl(340, 75%, 55%);
-    --sidebar-background: hsl(0, 0%, 7%);
-    --sidebar-foreground: hsl(0, 0%, 80%);
-    --sidebar-primary: hsl(211, 75%, 18%);
-    --sidebar-primary-foreground: hsl(0, 0%, 100%);
-    --sidebar-accent: hsl(0, 0%, 15.9%);
-    --sidebar-accent-foreground: hsl(240, 4.8%, 95.9%);
-    --sidebar-border: hsl(0, 0%, 15.9%);
-    --sidebar-ring: hsl(217.2, 91.2%, 59.8%);
+    --background: #121212;
+    --foreground: #ffffff;
+    --card: #1e1e1e;
+    --card-foreground: #ffffff;
+    --popover: #1e1e1e;
+    --popover-foreground: #ffffff;
+    --primary: #2178bd;
+    --primary-foreground: #ffffff;
+    --secondary: #2a2a2a;
+    --secondary-foreground: #ffffff;
+    --muted: #2a2a2a;
+    --muted-foreground: #9e9e9e;
+    --accent: #2a2a2a;
+    --accent-foreground: #ffffff;
+    --destructive: #ef4444;
+    --destructive-foreground: #ffffff;
+    --border: #2a2a2a;
+    --input: #2a2a2a;
+    --ring: #2178bd;
+
+    --header: #1a1a2e;
+    --header-foreground: #ffffff;
+    --nav: #1a1a2e;
+    --nav-foreground: #9e9e9e;
+    --card-shadow: 0 4px 14px rgb(0 0 0 / 0.2);
+    --watermark: #ffffff;
+    --watermark-opacity: 0.06;
+
+    --sidebar-background: #1a1a2e;
+    --sidebar-foreground: #bdbdbd;
+    --sidebar-primary: #2178bd;
+    --sidebar-primary-foreground: #ffffff;
+    --sidebar-accent: rgb(33 120 189 / 0.2);
+    --sidebar-accent-foreground: #6fb3e8;
+    --sidebar-border: #2a2a2a;
+    --sidebar-ring: #2178bd;
 }
 
 @layer base {
@@ -156,5 +217,72 @@
 
     body {
         @apply bg-background text-foreground;
+    }
+}
+
+@layer components {
+    /* The faint, rotated StarOil wordmark drawn behind page content. */
+    .staroil-watermark {
+        pointer-events: none;
+        position: absolute;
+        inset: 0;
+        overflow: hidden;
+        z-index: 0;
+    }
+
+    .staroil-watermark::before {
+        content: '';
+        position: absolute;
+        left: 7.5%;
+        top: 42%;
+        width: 85%;
+        aspect-ratio: 1053 / 281;
+        max-height: 60vh;
+        translate: 0 -50%;
+        rotate: -19deg;
+        background-color: var(--watermark);
+        opacity: var(--watermark-opacity);
+        mask: url('/images/staroil-wordmark.png') center / contain no-repeat;
+        -webkit-mask: url('/images/staroil-wordmark.png') center / contain no-repeat;
+    }
+
+    /* Gold shimmer that sweeps across the brand title, as on the phone. */
+    .brand-shimmer {
+        background-image: linear-gradient(100deg, #ffffff 0%, #ffffff 35%, #ffd54f 50%, #ffffff 65%, #ffffff 100%);
+        background-size: 250% 100%;
+        background-clip: text;
+        -webkit-background-clip: text;
+        color: transparent;
+        animation:
+            brand-enter 700ms cubic-bezier(0.33, 1, 0.68, 1) both,
+            brand-shimmer 2.4s linear infinite;
+    }
+
+    @keyframes brand-shimmer {
+        from {
+            background-position: 100% 0;
+        }
+        to {
+            background-position: -150% 0;
+        }
+    }
+
+    @keyframes brand-enter {
+        from {
+            opacity: 0;
+            translate: 0 40%;
+        }
+        to {
+            opacity: 1;
+            translate: 0 0;
+        }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .brand-shimmer {
+            animation: none;
+            color: #ffffff;
+            background: none;
+        }
     }
 }

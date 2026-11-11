@@ -5,7 +5,7 @@ import { useApiQuery } from '@/hooks/use-api-query';
 import { dashboards } from '@/lib/fuelops-api';
 import { type SharedData } from '@/types';
 import { usePage } from '@inertiajs/react';
-import { Fuel, Gauge, Signpost, TriangleAlert, Zap } from 'lucide-react';
+import { Fuel, Gauge, Signpost, TriangleAlert, Zap } from '@/components/icons';
 
 export default function OperationsOverview() {
     const { auth } = usePage<SharedData>().props;

@@ -13,7 +13,7 @@ import { CompletionBar, DailyUpdateDialog } from '@/pages/projects/index';
 import { type SharedData } from '@/types';
 import { type SpecialAssignment } from '@/types/fuelops';
 import { Link, usePage } from '@inertiajs/react';
-import { Car, CheckCircle2, Circle, LoaderCircle, Lock, MapPin, Plus, RefreshCw, Star } from 'lucide-react';
+import { Car, CheckCircle2, Circle, LoaderCircle, Lock, MapPin, Plus, RefreshCw, Star } from '@/components/icons';
 import { useState } from 'react';
 
 function statusTone(status: string): Tone {

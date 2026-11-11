@@ -12,7 +12,7 @@ import { specialAssignments } from '@/lib/fuelops-api';
 import { selectClassName } from '@/pages/projects/index';
 import { type SharedData } from '@/types';
 import { router, usePage } from '@inertiajs/react';
-import { LoaderCircle, Lock } from 'lucide-react';
+import { LoaderCircle, Lock } from '@/components/icons';
 import { FormEvent, useState } from 'react';
 
 export default function CreateSpecialAssignment() {

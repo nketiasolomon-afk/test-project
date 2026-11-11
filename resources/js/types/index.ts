@@ -1,4 +1,4 @@
-import { LucideIcon } from 'lucide-react';
+import { IconType } from '@/components/icons';
 
 export interface Auth {
     user: User;
@@ -17,7 +17,7 @@ export interface NavGroup {
 export interface NavItem {
     title: string;
     url: string;
-    icon?: LucideIcon | null;
+    icon?: IconType | null;
     isActive?: boolean;
 }
 

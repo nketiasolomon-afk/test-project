@@ -16,7 +16,7 @@ import { cn } from '@/lib/utils';
 import { type SharedData } from '@/types';
 import { type Project } from '@/types/fuelops';
 import { usePage } from '@inertiajs/react';
-import { Car, FileText, FolderKanban, LoaderCircle, Lock, MapPin, Plus, RefreshCw, Star, Users, X } from 'lucide-react';
+import { Car, FileText, FolderKanban, LoaderCircle, Lock, MapPin, Plus, RefreshCw, Star, Users, X } from '@/components/icons';
 import { useEffect, useMemo, useRef, useState } from 'react';
 
 export const selectClassName =

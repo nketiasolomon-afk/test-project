@@ -1,5 +1,5 @@
 import { Button } from '@/components/ui/button';
-import { ImagePlus, X } from 'lucide-react';
+import { ImagePlus, X } from '@/components/icons';
 import { useEffect, useMemo, useRef } from 'react';
 
 /**

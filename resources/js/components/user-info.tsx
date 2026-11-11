@@ -7,7 +7,7 @@ export function UserInfo({ user, showRole = false }: { user: User; showRole?: bo
         <>
             <Avatar className="h-8 w-8 overflow-hidden rounded-full">
                 <AvatarImage src={user.profilePicUrl ?? undefined} alt={user.fullName} />
-                <AvatarFallback className="rounded-lg bg-neutral-200 text-black dark:bg-neutral-700 dark:text-white">
+                <AvatarFallback className="rounded-full bg-primary/10 font-semibold text-primary dark:bg-primary/25 dark:text-white">
                     {initials(user.fullName || user.username)}
                 </AvatarFallback>
             </Avatar>

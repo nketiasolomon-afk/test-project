@@ -13,7 +13,7 @@ import { errorText } from '@/lib/api';
 import { formatDate, formatQuantity, type Tone } from '@/lib/format';
 import { inventoryRequests, products } from '@/lib/fuelops-api';
 import { type CollectionCode, type InventoryRequest, type WarehouseProduct } from '@/types/fuelops';
-import { CircleCheck, Copy, LoaderCircle, PackagePlus, Plus, RefreshCw, Send, Trash2 } from 'lucide-react';
+import { CircleCheck, Copy, LoaderCircle, PackagePlus, Plus, RefreshCw, Send, Trash2 } from '@/components/icons';
 import { FormEvent, useState } from 'react';
 
 interface RequestLine {

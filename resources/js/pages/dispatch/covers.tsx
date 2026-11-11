@@ -12,7 +12,7 @@ import { formatDateTime } from '@/lib/format';
 import { dispatch } from '@/lib/fuelops-api';
 import { cn } from '@/lib/utils';
 import { type ClusterCovers, type LeaderCover } from '@/types/fuelops';
-import { LoaderCircle, Plus, ShieldHalf, X } from 'lucide-react';
+import { LoaderCircle, Plus, ShieldHalf, X } from '@/components/icons';
 import { useEffect, useState } from 'react';
 
 /** The value for an `<input type="datetime-local">`, in local time. */

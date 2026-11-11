@@ -1,5 +1,5 @@
 import { Head, useForm } from '@inertiajs/react';
-import { Eye, EyeOff, LoaderCircle } from 'lucide-react';
+import { Eye, EyeOff, LoaderCircle } from '@/components/icons';
 import { FormEventHandler, useState } from 'react';
 
 import InputError from '@/components/input-error';

@@ -44,7 +44,7 @@ import {
     UserPlus,
     X,
     XCircle,
-} from 'lucide-react';
+} from '@/components/icons';
 import { FormEvent, useEffect, useState } from 'react';
 
 const NO_CREW: CrewOptions = { technicians: [], transportModes: [] };

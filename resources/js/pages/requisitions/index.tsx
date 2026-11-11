@@ -9,7 +9,7 @@ import { timeAgo, type Tone } from '@/lib/format';
 import { requisitions } from '@/lib/fuelops-api';
 import { type CctvRequisition } from '@/types/fuelops';
 import { Link } from '@inertiajs/react';
-import { CircleCheck, ClipboardList, Flag, Hourglass, Plus, RefreshCw, Video } from 'lucide-react';
+import { CircleCheck, ClipboardList, Flag, Hourglass, Plus, RefreshCw, Video } from '@/components/icons';
 
 const APPROVED_STATUSES = ['approved', 'issued', 'completed'];
 

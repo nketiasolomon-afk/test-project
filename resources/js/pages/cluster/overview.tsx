@@ -12,7 +12,7 @@ import { dashboards, tickets } from '@/lib/fuelops-api';
 import { type SharedData } from '@/types';
 import { type Ticket, type TicketSummary } from '@/types/fuelops';
 import { Link, usePage } from '@inertiajs/react';
-import { ChevronRight, Inbox, UserPlus, UsersRound, Wrench } from 'lucide-react';
+import { ChevronRight, Inbox, UserPlus, UsersRound, Wrench } from '@/components/icons';
 import { useState } from 'react';
 
 const WAITING_STATES = ['NEW', 'DECLINED', 'REOPENED'];

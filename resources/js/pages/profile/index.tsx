@@ -12,7 +12,7 @@ import { busyTicketSummary, initials } from '@/lib/format';
 import { dispatch, profile } from '@/lib/fuelops-api';
 import { type SharedData, type User } from '@/types';
 import { Link, router, usePage } from '@inertiajs/react';
-import { Camera, ChevronRight, HardHat, LoaderCircle, LogOut, Palette, Pencil } from 'lucide-react';
+import { Camera, ChevronRight, HardHat, LoaderCircle, LogOut, Palette, Pencil } from '@/components/icons';
 import { useEffect, useMemo, useRef, useState } from 'react';
 
 /** Own Busy/Available status, linked to what's causing it, and the on/off duty switch. */

@@ -1,5 +1,5 @@
 import { Head, router, useForm } from '@inertiajs/react';
-import { LoaderCircle, ShieldCheck } from 'lucide-react';
+import { LoaderCircle, ShieldCheck } from '@/components/icons';
 import { ClipboardEvent, FormEventHandler, KeyboardEvent, useEffect, useRef, useState } from 'react';
 
 import InputError from '@/components/input-error';

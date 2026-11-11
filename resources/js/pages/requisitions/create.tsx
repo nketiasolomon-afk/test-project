@@ -12,7 +12,7 @@ import { products, requisitions } from '@/lib/fuelops-api';
 import { type SharedData } from '@/types';
 import { type WarehouseProduct } from '@/types/fuelops';
 import { router, usePage } from '@inertiajs/react';
-import { ChevronDown, LoaderCircle, PackageOpen, Plus, Send, Trash2 } from 'lucide-react';
+import { ChevronDown, LoaderCircle, PackageOpen, Plus, Send, Trash2 } from '@/components/icons';
 import { FormEvent, useEffect, useState } from 'react';
 
 /** CCTV requisitions draw only from the IT warehouse. */

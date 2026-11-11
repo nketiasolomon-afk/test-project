@@ -16,7 +16,7 @@ import { miniStore, products } from '@/lib/fuelops-api';
 import { type SharedData } from '@/types';
 import { type PendingRestockApproval, type RestockRequest, type WarehouseProduct } from '@/types/fuelops';
 import { usePage } from '@inertiajs/react';
-import { LoaderCircle, Plus, Store } from 'lucide-react';
+import { LoaderCircle, Plus, Store } from '@/components/icons';
 import { useEffect, useState } from 'react';
 
 function statusTone(status: string): Tone {

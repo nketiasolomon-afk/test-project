@@ -3,7 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Textarea } from '@/components/ui/textarea';
 import { errorText } from '@/lib/api';
 import { type DispatchReason } from '@/types/fuelops';
-import { LoaderCircle } from 'lucide-react';
+import { LoaderCircle } from '@/components/icons';
 import { useEffect, useState } from 'react';
 
 /** A reason picked from a controlled list, plus an optional note (required for reasons like "Other"). */

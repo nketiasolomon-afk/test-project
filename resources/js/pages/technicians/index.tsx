@@ -6,7 +6,7 @@ import { dashboards } from '@/lib/fuelops-api';
 import { type SharedData } from '@/types';
 import { type TechnicianStats } from '@/types/fuelops';
 import { usePage } from '@inertiajs/react';
-import { CircleCheck, type LucideIcon, Package, Route, Users } from 'lucide-react';
+import { CircleCheck, type IconType, Package, Route, Users } from '@/components/icons';
 
 export default function TechnicianDashboard() {
     const { auth } = usePage<SharedData>().props;
@@ -62,7 +62,7 @@ export default function TechnicianDashboard() {
     );
 }
 
-function Summary({ icon: Icon, label, value }: { icon: LucideIcon; label: string; value: string }) {
+function Summary({ icon: Icon, label, value }: { icon: IconType; label: string; value: string }) {
     return (
         <div className="flex flex-col items-center gap-1">
             <span className="flex size-10 items-center justify-center rounded-xl border border-white/15 bg-white/10">
@@ -75,7 +75,7 @@ function Summary({ icon: Icon, label, value }: { icon: LucideIcon; label: string
 }
 
 function TechnicianCard({ technician }: { technician: TechnicianStats }) {
-    const chips: [LucideIcon, string, string, string][] = [
+    const chips: [IconType, string, string, string][] = [
         [Route, `${technician.distanceCoveredKm.toFixed(1)} km`, 'Distance', 'text-primary'],
         [CircleCheck, String(technician.issuesResolved), 'Resolved', 'text-emerald-600'],
         [Package, String(technician.partsConsumed), 'Parts', 'text-amber-700'],

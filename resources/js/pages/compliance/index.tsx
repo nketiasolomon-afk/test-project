@@ -11,7 +11,7 @@ import { errorText } from '@/lib/api';
 import { compliance, stations } from '@/lib/fuelops-api';
 import { cn } from '@/lib/utils';
 import { type ComplianceCertificateSummary } from '@/types/fuelops';
-import { FileText, LoaderCircle, Send, ShieldCheck } from 'lucide-react';
+import { FileText, LoaderCircle, Send, ShieldCheck } from '@/components/icons';
 import { FormEvent, useEffect, useState } from 'react';
 
 const ITEM_CATALOG: Record<string, string[]> = {

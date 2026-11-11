@@ -11,7 +11,7 @@ import { cn } from '@/lib/utils';
 import { type SharedData, type User } from '@/types';
 import { type TechnicianAvailability, type Ticket } from '@/types/fuelops';
 import { Link, usePage } from '@inertiajs/react';
-import { Bell, ChartLine, HardHat, Inbox, RefreshCw, ShieldHalf, UserPlus } from 'lucide-react';
+import { Bell, ChartLine, HardHat, Inbox, RefreshCw, ShieldHalf, UserPlus } from '@/components/icons';
 import { useState } from 'react';
 
 /** Assigning/reassigning is a Cluster Leader action, plus a Technician with an active leader cover. */
