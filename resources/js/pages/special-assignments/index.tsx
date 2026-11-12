@@ -3,17 +3,32 @@ import { Page } from '@/components/fuelops/page';
 import { Pill } from '@/components/fuelops/pill';
 import { EmptyState, QueryView } from '@/components/fuelops/states';
 import { toast } from '@/components/fuelops/toast';
+import {
+    LoaderCircle,
+    MdAdd,
+    MdAssignmentLateOutline,
+    MdChevronRight,
+    MdDirectionsCarFilledOutline,
+    MdFlagOutline,
+    MdGroupsOutline,
+    MdLocalShipping,
+    MdLocationOnOutline,
+    MdLockOutline,
+    MdNotes,
+    MdPersonOutline,
+    MdVisibilityOutline,
+    RefreshCw,
+} from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import { useApiQuery } from '@/hooks/use-api-query';
 import { errorText } from '@/lib/api';
 import { formatDateTime, type Tone } from '@/lib/format';
 import { isPrimaryTechnicianFor, isSpecialAssignmentClosed, specialAssignments } from '@/lib/fuelops-api';
 import { cn } from '@/lib/utils';
-import { CompletionBar, DailyUpdateDialog } from '@/pages/projects/index';
+import { CompletionBar, DailyUpdateDialog, HeroBanner, InfoRow } from '@/pages/projects/index';
 import { type SharedData } from '@/types';
 import { type SpecialAssignment } from '@/types/fuelops';
 import { Link, usePage } from '@inertiajs/react';
-import { Car, CheckCircle2, Circle, LoaderCircle, Lock, MapPin, Plus, RefreshCw, Star } from '@/components/icons';
 import { useState } from 'react';
 
 function statusTone(status: string): Tone {
@@ -26,6 +41,20 @@ function statusTone(status: string): Tone {
             return 'green';
         default:
             return 'slate';
+    }
+}
+
+/** The phone's accent per status, used for the advance button. */
+function statusAccent(status: string): string {
+    switch (status) {
+        case 'in_transit':
+            return '#2178BD';
+        case 'closed':
+            return '#FFA726';
+        case 'signed_off':
+            return '#66BB6A';
+        default:
+            return '#9E9E9E';
     }
 }
 
@@ -42,12 +71,14 @@ function statusLabel(status: string): string {
     }
 }
 
+/** One step of the Set Off / Closed / Sign-off strip: small grey caps label over a blue time. */
 function TimelineStep({ label, at }: { label: string; at?: string | null }) {
     return (
-        <div className="flex-1 text-center">
-            {at ? <CheckCircle2 className="mx-auto size-4 text-green-600" /> : <Circle className="text-muted-foreground/50 mx-auto size-4" />}
-            <p className="text-xs font-medium">{label}</p>
-            <p className="text-muted-foreground text-[11px]">{at ? formatDateTime(at) : '–'}</p>
+        <div className="min-w-0 flex-1">
+            <p className="text-[9.5px] font-semibold tracking-[0.3px] text-[#bdbdbd] uppercase dark:text-[#757575]">{label}</p>
+            <p className={cn('mt-0.5 text-[12.5px] leading-tight font-semibold', at ? 'text-primary dark:text-[#6fb3e8]' : 'text-[#bdbdbd] dark:text-[#757575]')}>
+                {at ? formatDateTime(at) : '–'}
+            </p>
         </div>
     );
 }
@@ -82,34 +113,41 @@ export default function SpecialAssignmentsIndex() {
     return (
         <Page
             title="Special Assignments"
-            description="One-off field tasks assigned by Operations, with travel start/stop tracking and manager sign-off."
             back={{ href: '/tickets', label: 'Tickets' }}
+            width="wide"
             actions={
                 <>
-                    <Button variant="outline" size="sm" onClick={list.reload} disabled={list.isFetching}>
+                    <Button variant="secondary" size="sm" onClick={list.reload} disabled={list.isFetching}>
                         <RefreshCw className={cn(list.isFetching && 'animate-spin')} /> Refresh
                     </Button>
                     {isClusterLeader && (
                         <Button size="sm" asChild>
                             <Link href={route('special-assignments.create')}>
-                                <Plus /> New assignment
+                                <MdAdd /> New assignment
                             </Link>
                         </Button>
                     )}
                 </>
             }
         >
+            <HeroBanner
+                icon={MdLocalShipping}
+                title="Special Assignments"
+                description="One-off field tasks assigned by Operations, with travel start/stop tracking and manager sign-off."
+            />
+
             {isClusterLeader && (
-                <div className="bg-muted inline-flex w-fit gap-1 rounded-lg p-1" role="tablist">
+                <div className="bg-card shadow-card flex w-full gap-1 rounded-[14px] border p-1 sm:w-fit" role="tablist">
                     {(['cluster', 'mine'] as const).map((value) => (
                         <button
                             key={value}
+                            type="button"
                             role="tab"
                             aria-selected={scope === value}
                             onClick={() => setScope(value)}
                             className={cn(
-                                'rounded-md px-3 py-1.5 text-sm font-medium',
-                                scope === value ? 'bg-background shadow-xs' : 'text-muted-foreground hover:text-foreground',
+                                'flex-1 rounded-[10px] px-4 py-2 text-[13px] font-semibold transition-colors sm:flex-none',
+                                scope === value ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground',
                             )}
                         >
                             {value === 'cluster' ? 'My Cluster' : 'Mine'}
@@ -123,7 +161,7 @@ export default function SpecialAssignmentsIndex() {
                 empty={(items) =>
                     items.length === 0 && (
                         <EmptyState
-                            icon={Star}
+                            icon={MdAssignmentLateOutline}
                             title="No special assignments yet"
                             description="One-off tasks assigned to you by Operations will appear here."
                         />
@@ -131,73 +169,91 @@ export default function SpecialAssignmentsIndex() {
                 }
             >
                 {(items) => (
-                    <div className="space-y-3">
-                        <p className="text-muted-foreground text-sm font-medium">
+                    <section className="space-y-3">
+                        <h2 className="text-foreground px-0.5 text-base font-bold">
                             {scope === 'cluster' ? 'Cluster Special Assignments' : 'My Special Assignments'} ({items.length})
-                        </p>
-                        <div className="grid gap-3 md:grid-cols-2">
+                        </h2>
+                        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
                             {items.map((assignment) => {
                                 // Set off/close are a Cluster Leader's actions; sign-off is web-only for Operations Managers.
                                 const canAdvance = isClusterLeader && (assignment.status === 'assigned' || assignment.status === 'in_transit');
                                 const editable = canUpdate(assignment);
+                                const accent = statusAccent(assignment.status);
+                                const busy = busyId === assignment.id;
                                 return (
-                                    <article key={assignment.id} className="bg-card space-y-3 rounded-xl border p-4 shadow-xs">
-                                        <div className="flex items-start justify-between gap-2">
-                                            <div className="min-w-0">
-                                                <h3 className="flex items-center gap-1 font-semibold">
-                                                    <MapPin className="size-4 shrink-0" /> {assignment.location || '-'}
-                                                </h3>
-                                                <p className="text-muted-foreground text-sm">{assignment.briefDescription}</p>
-                                            </div>
-                                            <Pill tone={statusTone(assignment.status)}>{statusLabel(assignment.status)}</Pill>
+                                    <article key={assignment.id} className="bg-card shadow-card flex flex-col rounded-2xl border p-4">
+                                        <div className="flex items-start gap-2">
+                                            <h3 className="text-foreground line-clamp-2 min-w-0 flex-1 text-[15px] leading-snug font-bold">
+                                                {assignment.briefDescription || assignment.location || '-'}
+                                            </h3>
+                                            <Pill tone={statusTone(assignment.status)} className="tracking-[0.3px]">
+                                                {statusLabel(assignment.status)}
+                                            </Pill>
                                         </div>
-                                        <div className="text-muted-foreground space-y-0.5 text-sm">
-                                            <p>Primary technician: {assignment.assignedTo || '-'}</p>
+                                        <div className="mt-2 space-y-1.5">
+                                            <InfoRow icon={MdLocationOnOutline}>
+                                                <span className="block truncate">{assignment.location || '-'}</span>
+                                            </InfoRow>
+                                            <InfoRow icon={MdPersonOutline}>Primary technician: {assignment.assignedTo || '-'}</InfoRow>
                                             {assignment.additionalTechnicians.length > 0 && (
-                                                <p>Additional: {assignment.additionalTechnicians.join(', ')}</p>
+                                                <InfoRow icon={MdGroupsOutline}>Additional: {assignment.additionalTechnicians.join(', ')}</InfoRow>
                                             )}
-                                            <p>Status: {assignment.workStatus}</p>
-                                            {assignment.transportMode && (
-                                                <p className="flex items-center gap-1">
-                                                    <Car className="size-3.5" /> {assignment.transportMode}
-                                                </p>
-                                            )}
+                                            <InfoRow icon={MdFlagOutline}>Status: {assignment.workStatus}</InfoRow>
                                         </div>
-                                        <CompletionBar percent={assignment.completionPercent} />
-                                        {assignment.lastWorkSummary && <p className="text-sm">Latest: {assignment.lastWorkSummary}</p>}
-                                        <div className="flex border-t pt-3">
-                                            <TimelineStep label="Set Off" at={assignment.setOffAt} />
-                                            <TimelineStep label="Closed" at={assignment.closedAt} />
-                                            <TimelineStep label="Sign-off" at={assignment.signedOffAt} />
-                                        </div>
-                                        <div className="flex flex-wrap gap-2">
+                                        <CompletionBar percent={assignment.completionPercent} className="mt-3" />
+                                        {assignment.transportMode && (
+                                            <InfoRow icon={MdDirectionsCarFilledOutline} className="mt-1.5">
+                                                {assignment.transportMode}
+                                            </InfoRow>
+                                        )}
+                                        {assignment.lastWorkSummary && (
+                                            <InfoRow icon={MdNotes} className="mt-1.5">
+                                                <span className="line-clamp-2">Latest: {assignment.lastWorkSummary}</span>
+                                            </InfoRow>
+                                        )}
+                                        <div className="mt-auto pt-3">
+                                            <div className="flex gap-2 border-t pt-2.5">
+                                                <TimelineStep label="Set Off" at={assignment.setOffAt} />
+                                                <TimelineStep label="Closed" at={assignment.closedAt} />
+                                                <TimelineStep label="Sign-off" at={assignment.signedOffAt} />
+                                            </div>
                                             {canAdvance && (
                                                 <Button
                                                     variant="outline"
-                                                    size="sm"
-                                                    disabled={busyId === assignment.id}
+                                                    className="mt-3.5 h-10 w-full rounded-[10px] bg-transparent text-[13px]"
+                                                    style={{ color: accent, borderColor: `color-mix(in srgb, ${accent} 40%, transparent)` }}
+                                                    disabled={busy}
                                                     onClick={() => (assignment.status === 'assigned' ? setOff(assignment) : setClosing(assignment))}
                                                 >
-                                                    {busyId === assignment.id && <LoaderCircle className="animate-spin" />}
-                                                    {assignment.status === 'assigned' ? 'Set Off' : 'Mark Closed'}
+                                                    {busy ? <LoaderCircle className="animate-spin" /> : assignment.status === 'assigned' ? 'Set Off' : 'Mark Closed'}
                                                 </Button>
                                             )}
-                                            {editable ? (
-                                                <Button size="sm" onClick={() => setUpdating(assignment)}>
-                                                    <Plus /> Add update
-                                                </Button>
-                                            ) : (
-                                                <span className="text-muted-foreground flex items-center gap-1 text-xs">
-                                                    <Lock className="size-3.5" />
-                                                    {isSpecialAssignmentClosed(assignment) ? 'Signed off · Closed' : 'View only'}
-                                                </span>
-                                            )}
+                                            <div className="mt-3 flex justify-end">
+                                                {editable ? (
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setUpdating(assignment)}
+                                                        className="text-primary flex items-center rounded-md text-[11.5px] font-semibold hover:underline"
+                                                    >
+                                                        Add update <MdChevronRight className="size-4" />
+                                                    </button>
+                                                ) : (
+                                                    <span className="flex items-center gap-1 text-[11.5px] font-semibold text-[#9e9e9e]">
+                                                        {isSpecialAssignmentClosed(assignment) ? (
+                                                            <MdLockOutline className="size-[13px]" />
+                                                        ) : (
+                                                            <MdVisibilityOutline className="size-[13px]" />
+                                                        )}
+                                                        {isSpecialAssignmentClosed(assignment) ? 'Signed off · Closed' : 'View only'}
+                                                    </span>
+                                                )}
+                                            </div>
                                         </div>
                                     </article>
                                 );
                             })}
                         </div>
-                    </div>
+                    </section>
                 )}
             </QueryView>
 

@@ -4,6 +4,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { errorText } from '@/lib/api';
 import { type DispatchReason } from '@/types/fuelops';
 import { LoaderCircle } from '@/components/icons';
+import { cn } from '@/lib/utils';
 import { useEffect, useState } from 'react';
 
 /** A reason picked from a controlled list, plus an optional note (required for reasons like "Other"). */
@@ -73,14 +74,20 @@ export function ReasonPickerDialog({
                     <DialogTitle>{title}</DialogTitle>
                 </DialogHeader>
                 {header}
-                <fieldset className="space-y-1">
+                <fieldset className="-mx-1 space-y-0.5">
                     <legend className="sr-only">Reason</legend>
                     {reasons.map((reason) => (
-                        <label key={reason.code} className="hover:bg-accent flex cursor-pointer items-center gap-3 rounded-md px-2 py-2 text-sm">
+                        <label
+                            key={reason.code}
+                            className={cn(
+                                'flex cursor-pointer items-center gap-3 rounded-xl px-2.5 py-2.5 text-sm transition-colors',
+                                code === reason.code ? 'bg-primary/8 dark:bg-primary/20 font-medium' : 'hover:bg-accent',
+                            )}
+                        >
                             <input
                                 type="radio"
                                 name="dispatch-reason"
-                                className="accent-primary size-4"
+                                className="accent-primary size-[18px] shrink-0"
                                 checked={code === reason.code}
                                 onChange={() => setCode(reason.code)}
                             />
@@ -95,8 +102,8 @@ export function ReasonPickerDialog({
                     placeholder={noteRequired ? 'Describe the reason (required)' : 'Add a note (optional)'}
                     aria-label="Note"
                 />
-                {error && <p className="text-sm text-red-600 dark:text-red-400">{error}</p>}
-                <Button variant={destructive ? 'destructive' : 'default'} className="w-full" disabled={!canConfirm || busy} onClick={confirm}>
+                {error && <p className="text-[12.5px] text-red-600 dark:text-red-400">{error}</p>}
+                <Button variant={destructive ? 'destructive' : 'default'} size="lg" className="w-full" disabled={!canConfirm || busy} onClick={confirm}>
                     {busy && <LoaderCircle className="animate-spin" />}
                     {confirmLabel}
                 </Button>

@@ -17,7 +17,6 @@ import {
     TriangleAlert,
     UserRound,
     UsersRound,
-    Video,
     Warehouse,
     CirclePlus,
     CirclePlusFilled,

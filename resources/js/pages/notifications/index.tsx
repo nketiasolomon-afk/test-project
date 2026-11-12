@@ -1,3 +1,4 @@
+import { IconTile } from '@/components/fuelops/icon-tile';
 import { Page } from '@/components/fuelops/page';
 import { EmptyState, QueryView } from '@/components/fuelops/states';
 import { toast } from '@/components/fuelops/toast';
@@ -9,7 +10,7 @@ import { inventoryRequests, notifications } from '@/lib/fuelops-api';
 import { cn } from '@/lib/utils';
 import { type AppNotification } from '@/types/fuelops';
 import { router } from '@inertiajs/react';
-import { Bell, BellOff, CheckCheck, TriangleAlert } from '@/components/icons';
+import { BellOff, CheckCheck, Clock, MdNotifications, MdWarningAmber } from '@/components/icons';
 import { useEffect, useState } from 'react';
 
 /** The structured contents of a "Your items are ready to collect" notification. */
@@ -130,7 +131,7 @@ export default function Notifications() {
             width="narrow"
             actions={
                 unread > 0 && (
-                    <Button variant="outline" size="sm" onClick={markAllRead} disabled={markingAll}>
+                    <Button variant="ghost" size="sm" onClick={markAllRead} disabled={markingAll} className="text-primary hover:text-primary font-semibold">
                         <CheckCheck /> Mark all read
                     </Button>
                 )
@@ -141,61 +142,65 @@ export default function Notifications() {
                 empty={(data) => data.items.length === 0 && <EmptyState icon={BellOff} title="No notifications yet." />}
             >
                 {(data) => (
-                    <ul className="bg-card divide-y rounded-xl border">
+                    <ul className="bg-card shadow-card border-border/70 divide-border/70 -mx-1 divide-y overflow-hidden rounded-[18px] border sm:mx-0">
                         {data.items.map((n) => {
                             const parsed = parseCollectionNotice(n);
                             const notice = parsed && {
                                 ...parsed,
                                 requestId: parsed.requestId ?? requestIdByCode[parsed.collectionCode.toUpperCase()] ?? null,
                             };
-                            const Icon = n.isOverride ? TriangleAlert : Bell;
+                            const Icon = n.isOverride ? MdWarningAmber : MdNotifications;
+                            const accent = n.readAt ? '#9E9E9E' : n.isOverride ? '#D84315' : '#2178BD';
                             return (
-                                <li key={n.id}>
-                                    <button type="button" onClick={() => open(n)} className="hover:bg-accent flex w-full gap-3 p-4 text-left">
-                                        <Icon
-                                            className={cn(
-                                                'mt-0.5 size-5 shrink-0',
-                                                n.readAt ? 'text-muted-foreground' : n.isOverride ? 'text-orange-700' : 'text-primary',
-                                            )}
-                                        />
-                                        <span className="min-w-0 flex-1 space-y-1">
-                                            <span className={cn('block text-sm', n.readAt ? 'font-medium' : 'font-bold')}>{n.title}</span>
+                                <li key={n.id} className={cn(!n.readAt && 'bg-primary/[0.03] dark:bg-primary/[0.06]')}>
+                                    <button
+                                        type="button"
+                                        onClick={() => open(n)}
+                                        className="hover:bg-accent/60 focus-visible:bg-accent/60 flex w-full gap-3.5 px-4 py-3.5 text-left transition-colors outline-none sm:px-5 sm:py-4"
+                                    >
+                                        <IconTile icon={Icon} color={accent} className="mt-0.5" />
+                                        <span className="min-w-0 flex-1">
+                                            <span className="flex items-start gap-2">
+                                                <span
+                                                    className={cn(
+                                                        'text-foreground min-w-0 flex-1 text-[15px] leading-snug break-words',
+                                                        n.readAt ? 'font-normal' : 'font-semibold',
+                                                    )}
+                                                >
+                                                    {n.title}
+                                                </span>
+                                                {!n.readAt && <span className="bg-primary mt-1.5 size-2 shrink-0 rounded-full" aria-label="Unread" />}
+                                            </span>
                                             {notice ? (
-                                                <span className="text-muted-foreground block text-sm">
-                                                    <ul className="list-disc space-y-0.5 pl-4">
-                                                        {notice.requestId && (
-                                                            <li>
-                                                                <span className="font-semibold">Request ID:</span> {notice.requestId}
-                                                            </li>
-                                                        )}
-                                                        <li>
-                                                            <span className="font-semibold">Collection Code:</span> {notice.collectionCode}
-                                                        </li>
+                                                <span className="text-muted-foreground mt-1 block text-[13px] leading-relaxed">
+                                                    <span className="block space-y-0.5">
+                                                        {notice.requestId && <Bullet label="Request ID" value={notice.requestId} />}
+                                                        <Bullet label="Collection Code" value={notice.collectionCode} />
                                                         {notice.items.length === 1 ? (
-                                                            <li>
-                                                                <span className="font-semibold">Item Issued:</span> {notice.items[0]}
-                                                            </li>
+                                                            <Bullet label="Item Issued" value={notice.items[0]} />
                                                         ) : (
                                                             notice.items.length > 1 && (
-                                                                <li>
-                                                                    <span className="font-semibold">Items Issued:</span>
-                                                                    <ul className="list-[circle] pl-4">
-                                                                        {notice.items.map((item, index) => (
-                                                                            <li key={index}>{item}</li>
-                                                                        ))}
-                                                                    </ul>
-                                                                </li>
+                                                                <>
+                                                                    <Bullet label="Items Issued" />
+                                                                    {notice.items.map((item, index) => (
+                                                                        <Bullet key={index} value={item} nested />
+                                                                    ))}
+                                                                </>
                                                             )
                                                         )}
-                                                    </ul>
-                                                    <span className="mt-1 block">Give the collection code at the station to collect.</span>
+                                                    </span>
+                                                    <span className="mt-1.5 block">Give the collection code at the station to collect.</span>
                                                 </span>
                                             ) : (
-                                                <span className="text-muted-foreground block text-sm whitespace-pre-line">{n.message}</span>
+                                                <span className="text-muted-foreground mt-1 block text-[13px] leading-relaxed break-words whitespace-pre-line">
+                                                    {n.message}
+                                                </span>
                                             )}
-                                            <span className="text-muted-foreground block text-xs">{ageLabel(n.createdAt)}</span>
+                                            <span className="text-muted-foreground/80 mt-1.5 flex items-center gap-1 text-xs">
+                                                <Clock className="size-3.5" />
+                                                {ageLabel(n.createdAt)}
+                                            </span>
                                         </span>
-                                        {!n.readAt && <span className="bg-primary mt-2 size-2 shrink-0 rounded-full" aria-label="Unread" />}
                                     </button>
                                 </li>
                             );
@@ -204,5 +209,21 @@ export default function Notifications() {
                 )}
             </QueryView>
         </Page>
+    );
+}
+
+/** One line of a collection notice: a drawn dot (hollow when nested), a bold label and its value. */
+function Bullet({ label, value, nested = false }: { label?: string; value?: string; nested?: boolean }) {
+    return (
+        <span className={cn('flex items-start gap-2', nested && 'pl-4')}>
+            <span
+                aria-hidden="true"
+                className={cn('mt-[0.55em] size-[5px] shrink-0 rounded-full', nested ? 'border border-current' : 'bg-current')}
+            />
+            <span className="min-w-0 break-words">
+                {label && <span className="text-foreground/80 font-semibold">{value ? `${label}: ` : `${label}:`}</span>}
+                {value}
+            </span>
+        </span>
     );
 }

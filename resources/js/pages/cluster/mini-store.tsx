@@ -16,7 +16,8 @@ import { miniStore, products } from '@/lib/fuelops-api';
 import { type SharedData } from '@/types';
 import { type PendingRestockApproval, type RestockRequest, type WarehouseProduct } from '@/types/fuelops';
 import { usePage } from '@inertiajs/react';
-import { LoaderCircle, Plus, Store } from '@/components/icons';
+import { IconTile } from '@/components/fuelops/icon-tile';
+import { LoaderCircle, MdAdd, MdCheckCircleOutline, MdEngineering, MdInventory2Outline, MdStorefront } from '@/components/icons';
 import { useEffect, useState } from 'react';
 
 function statusTone(status: string): Tone {
@@ -72,45 +73,58 @@ export default function ClusterMiniStore() {
     };
 
     return (
-        <Page title="Mini Store" description="Your cluster's stock & restock requests" back={{ href: '/dashboard', label: 'Dashboard' }}>
+        <Page
+            title="Mini Store"
+            description="Your cluster's stock & restock requests"
+            back={{ href: '/dashboard', label: 'Dashboard' }}
+            width="wide"
+        >
             {!allowed ? (
-                <EmptyState icon={Store} title="For Cluster Leaders" description="The cluster mini store is a Cluster Leader module." />
+                <EmptyState icon={MdStorefront} title="For Cluster Leaders" description="The cluster mini store is a Cluster Leader module." />
             ) : (
                 <QueryView query={data}>
                     {({ clusterStock, restocks, pendingApprovals }) => (
-                        <div className="space-y-8">
-                            <div className="bg-card space-y-3 rounded-xl border p-4 shadow-xs">
-                                <h2 className="font-semibold">Raise a Restock Request</h2>
-                                <Field label="Note (optional)" htmlFor="restock-note">
-                                    <Textarea id="restock-note" rows={2} value={note} onChange={(event) => setNote(event.target.value)} />
-                                </Field>
-                                <Button variant="outline" className="w-full" onClick={() => setPicking(true)}>
-                                    <Plus /> Select Item &amp; Request
-                                </Button>
+                        <div className="space-y-7">
+                            <div className="bg-card shadow-card rounded-2xl border p-4 lg:max-w-2xl">
+                                <div className="flex items-center gap-3">
+                                    <IconTile icon={MdInventory2Outline} className="text-primary" />
+                                    <h2 className="text-brand-ink text-base font-bold dark:text-white">Raise a Restock Request</h2>
+                                </div>
+                                <div className="mt-3.5 space-y-3">
+                                    <Field label="Note (optional)" htmlFor="restock-note">
+                                        <Textarea id="restock-note" rows={2} value={note} onChange={(event) => setNote(event.target.value)} />
+                                    </Field>
+                                    <Button variant="outline" className="w-full" onClick={() => setPicking(true)}>
+                                        <MdAdd /> Select Item &amp; Request
+                                    </Button>
+                                </div>
                             </div>
 
                             <Section title="Pending Team Requests">
                                 {pendingApprovals.length === 0 ? (
-                                    <p className="text-muted-foreground text-sm">No requests awaiting your approval.</p>
+                                    <p className="text-muted-foreground text-[13px]">No requests awaiting your approval.</p>
                                 ) : (
-                                    <ul className="space-y-3">
+                                    <ul className="grid items-start gap-2.5 md:grid-cols-2 xl:grid-cols-3">
                                         {pendingApprovals.map((approval) => (
-                                            <li key={approval.id} className="bg-card rounded-xl border p-4 shadow-xs">
-                                                <p className="font-semibold">{approval.technicianName}</p>
-                                                <p className="text-sm">
+                                            <li
+                                                key={approval.id}
+                                                className="bg-card shadow-card rounded-[14px] border border-[#6D28D9]/30 p-3.5 dark:border-[#A78BFA]/35"
+                                            >
+                                                <p className="text-muted-foreground text-xs font-semibold">{approval.technicianName}</p>
+                                                <p className="text-brand-ink mt-0.5 text-[15px] font-bold dark:text-white">
                                                     {approval.productName} × {approval.requestedQuantity}
                                                 </p>
-                                                {approval.note && <p className="text-muted-foreground mt-1 text-sm italic">{approval.note}</p>}
-                                                <div className="mt-3 grid grid-cols-2 gap-2">
+                                                {approval.note && <p className="text-muted-foreground/80 mt-1 text-xs italic">{approval.note}</p>}
+                                                <div className="mt-2.5 grid grid-cols-2 gap-2.5">
                                                     <Button
                                                         variant="outline"
-                                                        className="border-red-300 text-red-700 hover:text-red-700"
+                                                        className="border-red-200 text-red-700 hover:bg-red-600/8 hover:text-red-700 dark:border-red-400/40 dark:text-red-400"
                                                         onClick={() => setRejecting(approval)}
                                                     >
                                                         Reject
                                                     </Button>
                                                     <Button
-                                                        className="bg-green-700 text-white hover:bg-green-800"
+                                                        className="bg-[#2E7D32] text-white hover:bg-[#2E7D32]/90"
                                                         disabled={approvingId === approval.id}
                                                         onClick={() => approve(approval)}
                                                     >
@@ -126,16 +140,23 @@ export default function ClusterMiniStore() {
 
                             <Section title="My Restock Requests">
                                 {restocks.length === 0 ? (
-                                    <p className="text-muted-foreground text-sm">No restock requests yet.</p>
+                                    <p className="text-muted-foreground text-[13px]">No restock requests yet.</p>
                                 ) : (
-                                    <ul className="space-y-3">
+                                    <ul className="grid items-start gap-2.5 md:grid-cols-2 xl:grid-cols-3">
                                         {restocks.map((request) => (
-                                            <li key={request.id} className="bg-card rounded-xl border p-4 shadow-xs">
+                                            <li key={request.id} className="bg-card shadow-card rounded-[14px] border p-3.5">
                                                 <div className="flex items-start justify-between gap-2">
-                                                    <span className="font-semibold">{request.productName}</span>
-                                                    <Pill tone={statusTone(request.status)}>{request.status}</Pill>
+                                                    <span className="text-brand-ink min-w-0 text-sm font-semibold dark:text-white">
+                                                        {request.productName}
+                                                    </span>
+                                                    <Pill
+                                                        tone={statusTone(request.status)}
+                                                        className="rounded-full px-2 py-[3px] text-[10px] font-semibold"
+                                                    >
+                                                        {request.status}
+                                                    </Pill>
                                                 </div>
-                                                <p className="text-muted-foreground mt-1 text-sm">
+                                                <p className="text-muted-foreground mt-1 text-xs">
                                                     Requested {request.requestedQuantity}
                                                     {request.receivedQuantity != null
                                                         ? ` · received ${request.receivedQuantity}`
@@ -144,14 +165,14 @@ export default function ClusterMiniStore() {
                                                           : ''}
                                                 </p>
                                                 {request.status === 'CLUSTER_REJECTED' && request.clusterDecisionNote && (
-                                                    <p className="mt-1 text-sm text-red-700 italic dark:text-red-300">
+                                                    <p className="mt-1.5 text-[11px] text-red-500 italic dark:text-red-300">
                                                         {request.clusterDecisionNote}
                                                     </p>
                                                 )}
                                                 {request.status === 'ISSUED' && (
-                                                    <div className="mt-3 flex justify-end">
+                                                    <div className="mt-2.5 flex justify-end">
                                                         <Button size="sm" onClick={() => setReceiving(request)}>
-                                                            Confirm receipt
+                                                            <MdCheckCircleOutline /> Confirm receipt
                                                         </Button>
                                                     </div>
                                                 )}
@@ -163,16 +184,21 @@ export default function ClusterMiniStore() {
 
                             <Section title="Cluster Stock">
                                 {clusterStock.length === 0 ? (
-                                    <p className="text-muted-foreground text-sm">No stock held by your team yet.</p>
+                                    <p className="text-muted-foreground text-[13px]">No stock held by your team yet.</p>
                                 ) : (
-                                    <div className="grid gap-3 sm:grid-cols-2">
+                                    <div className="grid items-start gap-2.5 sm:grid-cols-2 xl:grid-cols-3">
                                         {clusterStock.map((entry) => (
-                                            <div key={entry.technicianId} className="bg-card rounded-xl border p-4 shadow-xs">
-                                                <p className="font-semibold">{entry.technicianName}</p>
+                                            <div key={entry.technicianId} className="bg-card shadow-card rounded-[14px] border p-3.5">
+                                                <div className="flex items-center gap-2.5">
+                                                    <IconTile icon={MdEngineering} size="sm" className="text-primary" />
+                                                    <p className="text-brand-ink min-w-0 truncate text-sm font-semibold dark:text-white">
+                                                        {entry.technicianName}
+                                                    </p>
+                                                </div>
                                                 {entry.items.length === 0 ? (
-                                                    <p className="text-muted-foreground mt-1 text-sm">No stock held</p>
+                                                    <p className="text-muted-foreground mt-2 text-xs">No stock held</p>
                                                 ) : (
-                                                    <ul className="text-muted-foreground mt-1 space-y-0.5 text-sm">
+                                                    <ul className="text-muted-foreground mt-2 space-y-0.5 text-xs">
                                                         {entry.items.map((item) => (
                                                             <li key={item.miniStoreItemId || item.productId}>
                                                                 {item.productName} · {formatQuantity(item.quantity)}

@@ -1,19 +1,19 @@
 import { Field } from '@/components/fuelops/field';
-import { Page, Section } from '@/components/fuelops/page';
-import { Pill } from '@/components/fuelops/pill';
+import { Page, SectionHeader } from '@/components/fuelops/page';
 import { SearchPicker } from '@/components/fuelops/search-picker';
 import { EmptyState, QueryView } from '@/components/fuelops/states';
 import { toast } from '@/components/fuelops/toast';
+import { CircleCheck, Copy, LoaderCircle, MdAdd, MdClose, MdInventory2Outline, MdSend, RefreshCw } from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useApiQuery } from '@/hooks/use-api-query';
 import { errorText } from '@/lib/api';
-import { formatDate, formatQuantity, type Tone } from '@/lib/format';
+import { formatDate, formatQuantity } from '@/lib/format';
 import { inventoryRequests, products } from '@/lib/fuelops-api';
+import { cn } from '@/lib/utils';
 import { type CollectionCode, type InventoryRequest, type WarehouseProduct } from '@/types/fuelops';
-import { CircleCheck, Copy, LoaderCircle, PackagePlus, Plus, RefreshCw, Send, Trash2 } from '@/components/icons';
 import { FormEvent, useState } from 'react';
 
 interface RequestLine {
@@ -22,7 +22,9 @@ interface RequestLine {
     quantity: number;
 }
 
-function statusTone(status: string): Tone {
+type StatusTone = 'blue' | 'emerald' | 'red' | 'amber';
+
+function statusTone(status: string): StatusTone {
     switch (status.toUpperCase()) {
         case 'APPROVED':
         case 'ISSUED':
@@ -36,6 +38,22 @@ function statusTone(status: string): Tone {
         default:
             return 'amber';
     }
+}
+
+/** The phone's request status colours (text in the colour on a 10% tint, 18% in dark mode). */
+const STATUS_CHIP: Record<StatusTone, string> = {
+    blue: 'text-[#2563EB] bg-[#2563EB]/10 dark:text-[#60A5FA] dark:bg-[#2563EB]/18',
+    emerald: 'text-[#059669] bg-[#059669]/10 dark:text-[#34D399] dark:bg-[#059669]/18',
+    red: 'text-[#DC2626] bg-[#DC2626]/10 dark:text-[#F87171] dark:bg-[#DC2626]/18',
+    amber: 'text-[#B45309] bg-[#B45309]/10 dark:text-[#FBBF24] dark:bg-[#B45309]/18',
+};
+
+function StatusChip({ status }: { status: string }) {
+    return (
+        <span className={cn('inline-flex shrink-0 rounded-full px-2 py-[3px] text-[10px] leading-tight font-semibold', STATUS_CHIP[statusTone(status)])}>
+            {status}
+        </span>
+    );
 }
 
 export default function InventoryRequests() {
@@ -77,70 +95,75 @@ export default function InventoryRequests() {
     };
 
     return (
-        <Page title="Inventory Request" description="Request stock from the warehouse" back={{ href: '/dashboard', label: 'Dashboard' }}>
-            <Section title="New Request">
-                <form onSubmit={submit} className="bg-card space-y-4 rounded-xl border p-4">
+        <Page title="Inventory Request" description="Request stock from the warehouse" back={{ href: '/dashboard', label: 'Dashboard' }} width="wide">
+            <div className="grid gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] lg:items-start lg:gap-8">
+                {/* New Request: the phone's white section card. */}
+                <form onSubmit={submit} className="bg-card shadow-card space-y-4 rounded-2xl border p-4 lg:sticky lg:top-6">
+                    <h2 className="text-foreground text-base font-bold">New Request</h2>
                     <div className="flex items-center justify-between">
-                        <span className="text-sm font-semibold">Items</span>
-                        <Button type="button" variant="outline" size="sm" onClick={() => setPicking(true)}>
-                            <Plus /> Add item
+                        <span className="text-foreground text-sm font-semibold">Items</span>
+                        <Button type="button" variant="ghost" size="sm" className="text-primary dark:text-[#6fb3e8]" onClick={() => setPicking(true)}>
+                            <MdAdd /> Add item
                         </Button>
                     </div>
                     {lines.length === 0 ? (
-                        <p className="text-muted-foreground text-sm">No items added yet.</p>
+                        <p className="text-muted-foreground -mt-1 py-1 text-[13px]">No items added yet.</p>
                     ) : (
-                        <ul className="divide-y rounded-lg border">
+                        <ul className="-mt-1 space-y-2">
                             {lines.map((line) => (
-                                <li key={line.productId} className="flex items-center gap-3 px-3 py-2 text-sm">
-                                    <span className="flex-1">{line.productName}</span>
-                                    <span className="font-semibold">×{line.quantity}</span>
-                                    <Button
+                                <li key={line.productId} className="bg-primary/6 dark:bg-primary/14 flex items-center gap-2 rounded-[10px] py-1 pr-1 pl-3">
+                                    <span className="text-foreground min-w-0 flex-1 py-1.5 text-[13px]">
+                                        {line.productName}
+                                        <span className="ml-2 font-semibold">×{line.quantity}</span>
+                                    </span>
+                                    <button
                                         type="button"
-                                        variant="ghost"
-                                        size="icon"
                                         onClick={() => setLines((current) => current.filter((l) => l.productId !== line.productId))}
                                         aria-label={`Remove ${line.productName}`}
+                                        title="Remove"
+                                        className="flex size-9 shrink-0 items-center justify-center rounded-full text-[#FF5252] transition-colors hover:bg-[#FF5252]/10"
                                     >
-                                        <Trash2 className="text-red-600" />
-                                    </Button>
+                                        <MdClose className="size-[18px]" />
+                                    </button>
                                 </li>
                             ))}
                         </ul>
                     )}
                     <Field label="Reason" htmlFor="reason" required>
-                        <Textarea id="reason" rows={3} value={reason} onChange={(event) => setReason(event.target.value)} />
+                        <Textarea id="reason" rows={2} value={reason} onChange={(event) => setReason(event.target.value)} />
                     </Field>
                     <Button type="submit" className="w-full" disabled={isSubmitting}>
-                        {isSubmitting ? <LoaderCircle className="animate-spin" /> : <Send />}
+                        {isSubmitting ? <LoaderCircle className="animate-spin" /> : <MdSend />}
                         Submit Request
                     </Button>
                 </form>
-            </Section>
 
-            <Section
-                title="My Requests"
-                actions={
-                    <Button variant="outline" size="sm" onClick={history.reload} disabled={history.isFetching}>
-                        <RefreshCw className={history.isFetching ? 'animate-spin' : undefined} /> Refresh
-                    </Button>
-                }
-            >
-                <QueryView
-                    query={history}
-                    loadingRows={3}
-                    empty={(data) => data.length === 0 && <EmptyState icon={PackagePlus} title="No requests submitted yet." />}
-                >
-                    {(data) => (
-                        <ul className="space-y-3">
-                            {data.map((request) => (
-                                <li key={request.requestId}>
-                                    <RequestHistoryCard request={request} onChanged={history.reload} />
-                                </li>
-                            ))}
-                        </ul>
-                    )}
-                </QueryView>
-            </Section>
+                <section className="space-y-3">
+                    <div className="flex items-center justify-between gap-2">
+                        <SectionHeader title="My Requests" className="text-base" />
+                        <Button variant="outline" size="sm" onClick={history.reload} disabled={history.isFetching}>
+                            <RefreshCw className={history.isFetching ? 'animate-spin' : undefined} /> Refresh
+                        </Button>
+                    </div>
+                    <QueryView
+                        query={history}
+                        loadingRows={3}
+                        empty={(data) =>
+                            data.length === 0 && <EmptyState icon={MdInventory2Outline} title="No requests submitted yet." className="py-8" />
+                        }
+                    >
+                        {(data) => (
+                            <ul className="grid gap-2.5 xl:grid-cols-2">
+                                {data.map((request) => (
+                                    <li key={request.requestId}>
+                                        <RequestHistoryCard request={request} onChanged={history.reload} />
+                                    </li>
+                                ))}
+                            </ul>
+                        )}
+                    </QueryView>
+                </section>
+            </div>
 
             <SearchPicker<WarehouseProduct>
                 open={picking}
@@ -253,25 +276,31 @@ function RequestHistoryCard({ request, onChanged }: { request: InventoryRequest;
     };
 
     return (
-        <div className="bg-card space-y-3 rounded-xl border p-4">
-            <p className="text-muted-foreground text-xs font-medium">{request.requestId}</p>
+        <div className="bg-card shadow-card h-full space-y-2.5 rounded-[14px] border p-3.5">
+            <p className="text-muted-foreground text-[11px] font-medium">{request.requestId}</p>
             {request.collectionCodes.map((code) => (
                 <CollectionCodeBanner key={code.code} code={code} />
             ))}
-            <ul className="space-y-2">
+            <ul className="space-y-1.5">
                 {request.items.map((item) => {
                     const approved = item.quantityApproved;
                     const qtyLabel = approved != null && String(approved) !== item.quantity ? `×${approved} of ${item.quantity}` : `×${item.quantity}`;
                     // Items handed over through a collection code are confirmed at the station instead.
                     const canConfirm = item.status.toUpperCase() === 'ISSUED' && !item.collectionCode && request.collectionCodes.length === 0;
                     return (
-                        <li key={item.ticketNumber} className="flex flex-wrap items-center gap-2 text-sm">
-                            <span className="flex-1 font-medium">
+                        <li key={item.ticketNumber} className="flex flex-wrap items-center gap-2">
+                            <span className="text-foreground min-w-0 flex-1 text-[13px] font-semibold">
                                 {item.itemName} {qtyLabel}
                             </span>
-                            <Pill tone={statusTone(item.status)}>{item.status}</Pill>
+                            <StatusChip status={item.status} />
                             {canConfirm && (
-                                <Button size="sm" variant="outline" disabled={confirming !== null} onClick={() => confirmReceived(item.ticketNumber)}>
+                                <Button
+                                    size="sm"
+                                    variant="secondary"
+                                    className="h-8"
+                                    disabled={confirming !== null}
+                                    onClick={() => confirmReceived(item.ticketNumber)}
+                                >
                                     {confirming === item.ticketNumber ? <LoaderCircle className="animate-spin" /> : <CircleCheck />}
                                     Confirm received
                                 </Button>
@@ -281,7 +310,7 @@ function RequestHistoryCard({ request, onChanged }: { request: InventoryRequest;
                 })}
             </ul>
             {request.reason && <p className="text-muted-foreground text-xs italic">{request.reason}</p>}
-            {request.submittedAt && <p className="text-muted-foreground text-xs">Submitted {formatDate(request.submittedAt)}</p>}
+            {request.submittedAt && <p className="text-muted-foreground text-[11px]">Submitted {formatDate(request.submittedAt)}</p>}
         </div>
     );
 }
@@ -300,21 +329,31 @@ function CollectionCodeBanner({ code }: { code: CollectionCode }) {
 
     return (
         <div
-            className={
+            className={cn(
+                'flex items-center gap-2 rounded-[10px] border py-2.5 pr-1 pl-3',
                 collected
-                    ? 'flex items-center gap-3 rounded-lg border border-emerald-600/30 bg-emerald-600/10 p-3'
-                    : 'flex items-center gap-3 rounded-lg border border-blue-600/30 bg-blue-600/10 p-3'
-            }
+                    ? 'border-[#059669]/35 bg-[#059669]/7 dark:bg-[#059669]/16'
+                    : 'border-[#2563EB]/35 bg-[#2563EB]/7 dark:bg-[#2563EB]/16',
+            )}
         >
-            <div className="flex-1">
-                <p className="text-muted-foreground text-xs">
+            <div className="min-w-0 flex-1">
+                <p className={cn('text-[11px]', collected ? 'text-[#059669] dark:text-[#34D399]' : 'text-[#2563EB] dark:text-[#60A5FA]')}>
                     {collected ? 'Collected at the station' : 'Collection code - give this at the station'}
                 </p>
-                <p className="font-mono text-xl font-bold tracking-widest select-all">{code.code}</p>
+                <p className="text-foreground mt-0.5 text-[22px] leading-tight font-bold tracking-[2px] select-all">{code.code}</p>
             </div>
-            <Button variant="ghost" size="icon" onClick={copy} aria-label="Copy code" title="Copy code">
-                <Copy />
-            </Button>
+            <button
+                type="button"
+                onClick={copy}
+                aria-label="Copy code"
+                title="Copy code"
+                className={cn(
+                    'flex size-10 shrink-0 items-center justify-center rounded-full transition-colors hover:bg-current/10',
+                    collected ? 'text-[#059669] dark:text-[#34D399]' : 'text-[#2563EB] dark:text-[#60A5FA]',
+                )}
+            >
+                <Copy className="size-[18px]" />
+            </button>
         </div>
     );
 }

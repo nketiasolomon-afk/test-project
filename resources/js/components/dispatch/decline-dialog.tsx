@@ -30,7 +30,7 @@ export function DeclineDialog({
             destructive
             header={
                 <div className="space-y-2">
-                    <p className="text-muted-foreground text-sm">
+                    <p className="text-muted-foreground text-[13px]">
                         Your Cluster Leader will see who declined and why, and reassign the ticket.
                     </p>
                     {reasons.isLoading && <p className="text-muted-foreground text-sm">Loading reasons...</p>}

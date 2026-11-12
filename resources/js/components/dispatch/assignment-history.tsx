@@ -4,19 +4,19 @@ import { tickets } from '@/lib/fuelops-api';
 import { cn } from '@/lib/utils';
 import { type TicketEvent } from '@/types/fuelops';
 import {
-    Circle,
-    CircleCheckBig,
-    CirclePlay,
-    CircleX,
-    ClipboardCheck,
-    LoaderCircle,
     type IconType,
-    RotateCcw,
-    ThumbsDown,
-    ThumbsUp,
-    TimerOff,
-    TriangleAlert,
-    UserPlus,
+    LoaderCircle,
+    MdAssignmentTurnedIn,
+    MdCancel,
+    MdCircleOutline,
+    MdPersonAddAlt1,
+    MdPlayCircleFill,
+    MdReplay,
+    MdThumbDownAlt,
+    MdThumbUpAlt,
+    MdTimerOff,
+    MdVerified,
+    MdWarningAmber,
 } from '@/components/icons';
 
 function eventTitle(event: TicketEvent): string {
@@ -58,19 +58,19 @@ function eventTitle(event: TicketEvent): string {
 }
 
 const EVENT_ICONS: Record<string, IconType> = {
-    ASSIGN: UserPlus,
-    REASSIGN: UserPlus,
-    OVERRIDE_ASSIGN: TriangleAlert,
-    ACCEPT: ThumbsUp,
-    DECLINE: ThumbsDown,
-    START: CirclePlay,
-    JOB_CARD_SUBMIT: ClipboardCheck,
-    RESTORATION_CONFIRMED: CircleCheckBig,
-    CLOSE: CircleCheckBig,
-    REOPEN: RotateCcw,
-    CANCEL: CircleX,
-    FORCE_CLOSE: CircleX,
-    RESPONSE_OVERDUE: TimerOff,
+    ASSIGN: MdPersonAddAlt1,
+    REASSIGN: MdPersonAddAlt1,
+    OVERRIDE_ASSIGN: MdWarningAmber,
+    ACCEPT: MdThumbUpAlt,
+    DECLINE: MdThumbDownAlt,
+    START: MdPlayCircleFill,
+    JOB_CARD_SUBMIT: MdAssignmentTurnedIn,
+    RESTORATION_CONFIRMED: MdVerified,
+    CLOSE: MdVerified,
+    REOPEN: MdReplay,
+    CANCEL: MdCancel,
+    FORCE_CLOSE: MdCancel,
+    RESPONSE_OVERDUE: MdTimerOff,
 };
 
 const ATTENTION_EVENTS = ['OVERRIDE_ASSIGN', 'DECLINE', 'RESPONSE_OVERDUE'];
@@ -89,13 +89,13 @@ export function AssignmentHistory({ ticketId, refreshKey }: { ticketId: string; 
             </div>
         );
     }
-    if (events.data === undefined) return <p className="text-sm text-red-600 dark:text-red-400">{events.error}</p>;
-    if (events.data.length === 0) return <p className="text-muted-foreground text-sm">No assignment activity yet.</p>;
+    if (events.data === undefined) return <p className="text-[12.5px] text-red-500 dark:text-red-400">{events.error}</p>;
+    if (events.data.length === 0) return <p className="text-muted-foreground text-[13px]">No assignment activity yet.</p>;
 
     return (
         <ol>
             {events.data.map((event, index) => {
-                const Icon = EVENT_ICONS[event.type] ?? Circle;
+                const Icon = EVENT_ICONS[event.type] ?? MdCircleOutline;
                 const isLast = index === events.data!.length - 1;
                 const detail = [
                     event.actorName ? `${event.actorName}${event.actorRole ? ` (${event.actorRole})` : ''}` : null,
@@ -107,13 +107,18 @@ export function AssignmentHistory({ ticketId, refreshKey }: { ticketId: string; 
                 return (
                     <li key={event.id || index} className="flex gap-2.5">
                         <div className="flex flex-col items-center">
-                            <Icon className={cn('size-[18px] shrink-0', ATTENTION_EVENTS.includes(event.type) ? 'text-orange-700' : 'text-primary')} />
-                            {!isLast && <span className="bg-border my-1 w-px flex-1" />}
+                            <Icon
+                                className={cn(
+                                    'size-[18px] shrink-0',
+                                    ATTENTION_EVENTS.includes(event.type) ? 'text-[#D84315] dark:text-[#FF8A65]' : 'text-primary dark:text-[#5AA3E0]',
+                                )}
+                            />
+                            {!isLast && <span className="my-1 w-[1.5px] flex-1 bg-slate-400/30" />}
                         </div>
-                        <div className="pb-3.5">
-                            <p className="text-sm font-semibold">{eventTitle(event)}</p>
-                            <p className="text-muted-foreground text-xs">{detail}</p>
-                            {why && <p className="mt-0.5 text-xs">{why}</p>}
+                        <div className="min-w-0 pb-3.5">
+                            <p className="text-[13.5px] leading-snug font-semibold">{eventTitle(event)}</p>
+                            <p className="text-muted-foreground mt-0.5 text-[11.5px]">{detail}</p>
+                            {why && <p className="text-foreground/80 mt-0.5 text-xs">{why}</p>}
                         </div>
                     </li>
                 );

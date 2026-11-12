@@ -12,7 +12,9 @@ import { formatDateTime } from '@/lib/format';
 import { dispatch } from '@/lib/fuelops-api';
 import { cn } from '@/lib/utils';
 import { type ClusterCovers, type LeaderCover } from '@/types/fuelops';
-import { LoaderCircle, Plus, ShieldHalf, X } from '@/components/icons';
+import { IconTile } from '@/components/fuelops/icon-tile';
+import { Pill } from '@/components/fuelops/pill';
+import { LoaderCircle, MdAdd, MdClose, MdShieldMoon, MdWorkspaces } from '@/components/icons';
 import { useEffect, useState } from 'react';
 
 /** The value for an `<input type="datetime-local">`, in local time. */
@@ -27,8 +29,8 @@ export default function LeaderCoverPage() {
     const [cancelling, setCancelling] = useState<LeaderCover | null>(null);
 
     return (
-        <Page title="Leader Cover" back={{ href: '/dispatch/queue', label: 'Assignment Queue' }} width="narrow">
-            <p className="text-muted-foreground text-sm">
+        <Page title="Leader Cover" back={{ href: '/dispatch/queue', label: 'Assignment Queue' }}>
+            <p className="text-muted-foreground max-w-3xl text-[13px] leading-relaxed">
                 Going off duty or on leave? Hand dispatch for your cluster to someone for a set time. They get the assignment queue, the alerts and
                 the right to assign until it ends.
             </p>
@@ -36,49 +38,53 @@ export default function LeaderCoverPage() {
             <QueryView
                 query={covers}
                 empty={(clusters) =>
-                    clusters.length === 0 && <EmptyState icon={ShieldHalf} title="Only a cluster's own leader can arrange cover for it." />
+                    clusters.length === 0 && <EmptyState icon={MdShieldMoon} title="Only a cluster's own leader can arrange cover for it." />
                 }
             >
                 {(clusters) => (
-                    <div className="space-y-4">
+                    <div className="grid items-start gap-4 md:grid-cols-2">
                         {clusters.map((cluster) => (
-                            <div key={cluster.clusterId} className="bg-card rounded-xl border p-4 shadow-xs">
-                                <div className="flex items-center justify-between gap-2">
-                                    <h2 className="font-semibold">
+                            <div key={cluster.clusterId} className="bg-card shadow-card rounded-[18px] border p-4">
+                                <div className="flex items-center gap-3">
+                                    <IconTile icon={MdWorkspaces} size="md" className="text-primary" />
+                                    <h2 className="text-brand-ink min-w-0 flex-1 text-[15px] leading-snug font-bold dark:text-white">
                                         {cluster.clusterCode} · {cluster.clusterName}
                                     </h2>
-                                    <Button variant="ghost" size="sm" onClick={() => setAdding(cluster)}>
-                                        <Plus /> Add cover
+                                    <Button variant="ghost" size="sm" className="text-primary hover:text-primary shrink-0" onClick={() => setAdding(cluster)}>
+                                        <MdAdd /> Add cover
                                     </Button>
                                 </div>
                                 {cluster.covers.length === 0 ? (
-                                    <p className="text-muted-foreground mt-2 text-sm">No cover arranged.</p>
+                                    <p className="text-muted-foreground mt-3 text-[13px]">No cover arranged.</p>
                                 ) : (
                                     <ul className="mt-2 divide-y">
                                         {cluster.covers.map((cover) => (
-                                            <li key={cover.id} className="flex items-start gap-3 py-2.5">
-                                                <ShieldHalf
+                                            <li key={cover.id} className="flex items-start gap-3 py-3 last:pb-0">
+                                                <MdShieldMoon
                                                     className={cn(
-                                                        'mt-0.5 size-5 shrink-0',
-                                                        cover.isActive ? 'text-green-600' : 'text-muted-foreground',
+                                                        'mt-0.5 size-6 shrink-0',
+                                                        cover.isActive ? 'text-[#43A047]' : 'text-muted-foreground/70',
                                                     )}
                                                 />
-                                                <div className="min-w-0 flex-1 text-sm">
-                                                    <p className="font-medium">{cover.fullName}</p>
-                                                    <p className="text-muted-foreground">
-                                                        {formatDateTime(cover.startsAt)} → {formatDateTime(cover.endsAt)}
-                                                        {cover.isActive && ' · active now'}
+                                                <div className="min-w-0 flex-1">
+                                                    <p className="flex flex-wrap items-center gap-2 text-[14.5px] font-semibold">
+                                                        {cover.fullName}
+                                                        {cover.isActive && <Pill tone="green">Active now</Pill>}
                                                     </p>
-                                                    {cover.reason && <p className="text-muted-foreground">{cover.reason}</p>}
+                                                    <p className="text-muted-foreground mt-0.5 text-[12.5px]">
+                                                        {formatDateTime(cover.startsAt)} → {formatDateTime(cover.endsAt)}
+                                                    </p>
+                                                    {cover.reason && <p className="text-muted-foreground text-[12.5px]">{cover.reason}</p>}
                                                 </div>
                                                 <Button
                                                     variant="ghost"
                                                     size="icon"
                                                     title="Cancel cover"
                                                     aria-label="Cancel cover"
+                                                    className="text-muted-foreground hover:text-destructive shrink-0"
                                                     onClick={() => setCancelling(cover)}
                                                 >
-                                                    <X />
+                                                    <MdClose />
                                                 </Button>
                                             </li>
                                         ))}
@@ -183,7 +189,7 @@ function AddCoverDialog({
                         id="cover-user"
                         value={userId}
                         onChange={(event) => setUserId(event.target.value)}
-                        className="border-input bg-background h-10 rounded-md border px-3 text-sm"
+                        className="border-border bg-input focus-visible:border-primary focus-visible:ring-primary h-12 w-full rounded-[14px] border px-4 text-base focus-visible:ring-1 focus-visible:outline-hidden md:text-sm"
                     >
                         <option value="">Select a person</option>
                         {cluster?.candidates.map((candidate) => (
@@ -193,7 +199,7 @@ function AddCoverDialog({
                         ))}
                     </select>
                 </Field>
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid gap-3 sm:grid-cols-2">
                     <Field label="From" htmlFor="cover-from">
                         <Input id="cover-from" type="datetime-local" value={startsAt} onChange={(event) => setStartsAt(event.target.value)} />
                     </Field>

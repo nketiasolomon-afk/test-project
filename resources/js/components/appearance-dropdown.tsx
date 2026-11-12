@@ -1,51 +1,47 @@
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { useAppearance } from '@/hooks/use-appearance';
-import { Monitor, Moon, Sun } from '@/components/icons';
+import { Appearance, useAppearance } from '@/hooks/use-appearance';
+import { cn } from '@/lib/utils';
+import { IconType, MdCheck, MdDarkMode, MdLightMode, Monitor } from '@/components/icons';
 import { HTMLAttributes } from 'react';
+
+const OPTIONS: { value: Appearance; icon: IconType; label: string }[] = [
+    { value: 'light', icon: MdLightMode, label: 'Light' },
+    { value: 'dark', icon: MdDarkMode, label: 'Dark' },
+    { value: 'system', icon: Monitor, label: 'System' },
+];
 
 export default function AppearanceToggleDropdown({ className = '', ...props }: HTMLAttributes<HTMLDivElement>) {
     const { appearance, updateAppearance } = useAppearance();
 
-    const getCurrentIcon = () => {
-        switch (appearance) {
-            case 'dark':
-                return <Moon className="h-5 w-5" />;
-            case 'light':
-                return <Sun className="h-5 w-5" />;
-            default:
-                return <Monitor className="h-5 w-5" />;
-        }
-    };
+    const CurrentIcon = (OPTIONS.find((option) => option.value === appearance) ?? OPTIONS[2]).icon;
 
     return (
         <div className={className} {...props}>
             <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" className="h-9 w-9 rounded-md">
-                        {getCurrentIcon()}
+                    <Button variant="ghost" size="icon" className="text-primary size-9 rounded-xl dark:text-[#6fb3e8]">
+                        <CurrentIcon className="size-5" />
                         <span className="sr-only">Toggle theme</span>
                     </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                    <DropdownMenuItem onClick={() => updateAppearance('light')}>
-                        <span className="flex items-center gap-2">
-                            <Sun className="h-5 w-5" />
-                            Light
-                        </span>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => updateAppearance('dark')}>
-                        <span className="flex items-center gap-2">
-                            <Moon className="h-5 w-5" />
-                            Dark
-                        </span>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => updateAppearance('system')}>
-                        <span className="flex items-center gap-2">
-                            <Monitor className="h-5 w-5" />
-                            System
-                        </span>
-                    </DropdownMenuItem>
+                <DropdownMenuContent align="end" className="min-w-40">
+                    {OPTIONS.map(({ value, icon: Icon, label }) => (
+                        <DropdownMenuItem key={value} onClick={() => updateAppearance(value)}>
+                            <span className="flex w-full items-center gap-2.5">
+                                <span
+                                    className={cn(
+                                        'text-primary flex size-7 items-center justify-center rounded-lg dark:text-[#6fb3e8]',
+                                        appearance === value ? 'bg-primary/12 dark:bg-primary/20' : 'bg-muted',
+                                    )}
+                                >
+                                    <Icon className="size-4" />
+                                </span>
+                                <span className={cn('flex-1', appearance === value && 'font-semibold')}>{label}</span>
+                                {appearance === value && <MdCheck className="text-primary size-4" />}
+                            </span>
+                        </DropdownMenuItem>
+                    ))}
                 </DropdownMenuContent>
             </DropdownMenu>
         </div>

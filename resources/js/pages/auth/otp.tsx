@@ -1,10 +1,10 @@
 import { Head, router, useForm } from '@inertiajs/react';
-import { LoaderCircle, ShieldCheck } from '@/components/icons';
 import { ClipboardEvent, FormEventHandler, KeyboardEvent, useEffect, useRef, useState } from 'react';
 
+import { MdArrowBack, MdMailOutline, MdSecurity, MdVerified } from '@/components/icons';
 import InputError from '@/components/input-error';
-import { Button } from '@/components/ui/button';
 import AuthLayout from '@/layouts/auth-layout';
+import { AuthPrimaryButton, GlassTile } from '@/layouts/auth/auth-controls';
 
 const CODE_LENGTH = 6;
 const RESEND_COOLDOWN_SECONDS = 30;
@@ -96,23 +96,49 @@ export default function Otp({ username, status }: OtpProps) {
         );
     };
 
+    const backToLogin = () => router.delete(route('otp.destroy'));
+
     return (
-        <AuthLayout title="Verification Code" description="Enter the 6-digit code sent to your email">
+        <AuthLayout
+            heroSize="compact"
+            heroAction={
+                <button
+                    type="button"
+                    onClick={backToLogin}
+                    aria-label="Back to sign in"
+                    className="flex size-12 items-center justify-center rounded-full text-white transition-colors hover:bg-white/10"
+                >
+                    <MdArrowBack className="size-7" />
+                </button>
+            }
+            hero={
+                <div className="flex flex-col items-center text-center">
+                    <GlassTile size={90} radius={24} className="border-transparent bg-white/15 shadow-[0_8px_20px_rgb(0_0_0/0.1)]">
+                        <MdMailOutline className="size-11 text-white" />
+                    </GlassTile>
+                    <h2 className="mt-5 text-[24px] font-bold tracking-[1px] text-white min-[380px]:text-[26px] lg:text-[32px]">Verify Your Email</h2>
+                    <p className="mt-2.5 text-sm text-white/70">Enter the code sent to</p>
+                    <p className="mt-1 max-w-[80vw] truncate text-base font-semibold text-white">{username}</p>
+                </div>
+            }
+        >
             <Head title="Verify your email" />
 
-            <p className="text-muted-foreground -mt-4 text-center text-sm">
-                Signing in as <span className="text-foreground font-medium">{username}</span>
-            </p>
+            <form className="flex flex-col items-center" onSubmit={submit}>
+                <h1 className="text-foreground mt-6 text-xl font-bold lg:mt-0">Verification Code</h1>
+                <p className="text-muted-foreground mt-2 text-center text-[13px]">Enter the 6-digit code sent to your email</p>
 
-            {status && (
-                <div role="status" className="rounded-md border border-green-600/30 bg-green-600/10 p-3 text-center text-sm">
-                    {status}
-                </div>
-            )}
+                {status && (
+                    <div
+                        role="status"
+                        className="mt-5 w-full rounded-xl border border-green-600/25 bg-green-600/8 p-3 text-center text-[12.5px] text-green-800 dark:text-green-300"
+                    >
+                        {status}
+                    </div>
+                )}
 
-            <form className="flex flex-col gap-6" onSubmit={submit}>
-                <div className="grid gap-2">
-                    <div className="flex justify-between gap-2">
+                <div className="mt-8 grid w-full gap-2">
+                    <div className="flex justify-between gap-1.5 min-[380px]:justify-evenly">
                         {digits.map((digit, index) => (
                             <input
                                 key={index}
@@ -128,41 +154,48 @@ export default function Otp({ username, status }: OtpProps) {
                                 inputMode="numeric"
                                 autoComplete={index === 0 ? 'one-time-code' : 'off'}
                                 aria-label={`Digit ${index + 1}`}
-                                className="border-input bg-background focus-visible:ring-ring h-12 w-11 rounded-lg border text-center text-xl font-semibold focus-visible:ring-2 focus-visible:outline-hidden"
+                                aria-invalid={errors.otp_code ? true : undefined}
+                                className="text-foreground focus:border-primary h-14 w-full max-w-12 min-w-0 rounded-xl border-[1.5px] border-[#757575] bg-[#eeeeee] text-center text-[22px] font-bold transition-colors outline-none focus:border-2 aria-invalid:border-red-400 dark:border-white/25 dark:bg-white/6"
                             />
                         ))}
                     </div>
-                    <InputError message={errors.otp_code} className="text-center" />
+                    <InputError message={errors.otp_code} className="text-center text-xs" />
                 </div>
 
-                <Button type="submit" className="w-full" disabled={processing || data.otp_code.length !== CODE_LENGTH}>
-                    {processing && <LoaderCircle className="h-4 w-4 animate-spin" />}
-                    Verify &amp; Continue
-                </Button>
+                <AuthPrimaryButton
+                    variant="solid"
+                    label="Verify & Continue"
+                    icon={MdVerified}
+                    loading={processing}
+                    disabled={data.otp_code.length !== CODE_LENGTH}
+                    className="mt-7"
+                />
 
-                <div className="text-muted-foreground text-center text-sm">
-                    Didn't receive the code?{' '}
+                <div className="mt-5 text-center text-[13px]">
+                    <span className="text-muted-foreground">Didn&apos;t receive the code? </span>
                     {cooldown > 0 ? (
-                        <span>Resend in {cooldown}s</span>
+                        <span className="font-semibold text-[#bdbdbd] dark:text-white/40">Resend in {cooldown}s</span>
                     ) : (
-                        <button type="button" onClick={resend} disabled={resending} className="text-primary font-medium hover:underline">
+                        <button type="button" onClick={resend} disabled={resending} className="text-primary font-semibold underline underline-offset-2">
                             {resending ? 'Sending...' : 'Resend Code'}
                         </button>
                     )}
                 </div>
 
-                <div className="bg-muted flex items-start gap-3 rounded-lg p-3 text-xs">
-                    <ShieldCheck className="text-primary mt-0.5 size-4 shrink-0" />
+                <div className="border-primary/10 bg-primary/5 mt-6 flex w-full items-start gap-2.5 rounded-xl border p-3.5">
+                    <MdSecurity className="text-primary size-[18px] shrink-0" />
                     <div>
-                        <p className="font-semibold">Secure Verification</p>
-                        <p className="text-muted-foreground">This code expires in 5 minutes. Never share this code with anyone.</p>
+                        <p className="text-primary text-xs font-semibold">Secure Verification</p>
+                        <p className="text-muted-foreground mt-1 text-[11px] leading-[1.4]">
+                            This code expires in 5 minutes. Never share this code with anyone.
+                        </p>
                     </div>
                 </div>
 
                 <button
                     type="button"
-                    onClick={() => router.delete(route('otp.destroy'))}
-                    className="text-muted-foreground hover:text-foreground text-center text-sm underline-offset-4 hover:underline"
+                    onClick={backToLogin}
+                    className="text-muted-foreground hover:text-foreground mt-5 text-center text-[13px] underline-offset-4 hover:underline"
                 >
                     Back to sign in
                 </button>

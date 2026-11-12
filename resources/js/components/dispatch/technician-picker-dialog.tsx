@@ -10,7 +10,8 @@ import { ApiError, errorText } from '@/lib/api';
 import { availabilityLabel, busyTicketSummary, DISPATCH_HELD_STATES } from '@/lib/format';
 import { dispatch } from '@/lib/fuelops-api';
 import { type DispatchReason, type TechnicianAvailability, type Ticket } from '@/types/fuelops';
-import { LoaderCircle, TriangleAlert } from '@/components/icons';
+import { cn } from '@/lib/utils';
+import { LoaderCircle, MdWarningAmber } from '@/components/icons';
 import { useEffect, useState } from 'react';
 
 /**
@@ -118,23 +119,27 @@ export function TechnicianPickerDialog({
                         ) : roster.data.length === 0 ? (
                             <p className="text-muted-foreground p-8 text-center text-sm">No technicians found in this cluster.</p>
                         ) : (
-                            <ul className="divide-y">
+                            <ul className="[&>li+li]:before:bg-border [&>li+li]:before:ml-12 [&>li+li]:before:block [&>li+li]:before:h-px [&>li+li]:before:content-['']">
                                 {roster.data.map((technician) => {
                                     // The current assignee can't be picked again; they're shown but disabled.
                                     const isCurrent = isReassign && technician.userId === ticket.assignee?.userId;
+                                    const isSelected = selectedId === technician.userId;
                                     return (
                                         <li key={technician.userId}>
                                             <label
-                                                className={
+                                                className={cn(
+                                                    'flex items-start gap-3.5 rounded-xl px-3 py-3 transition-colors',
                                                     isCurrent
-                                                        ? 'flex items-start gap-3 px-3 py-2.5 opacity-50'
-                                                        : 'hover:bg-accent flex cursor-pointer items-start gap-3 rounded-md px-3 py-2.5'
-                                                }
+                                                        ? 'opacity-50'
+                                                        : isSelected
+                                                          ? 'bg-primary/8 dark:bg-primary/20 cursor-pointer'
+                                                          : 'hover:bg-accent cursor-pointer',
+                                                )}
                                             >
                                                 <input
                                                     type="radio"
                                                     name="technician"
-                                                    className="accent-primary mt-1 size-4"
+                                                    className="accent-primary mt-0.5 size-[18px] shrink-0"
                                                     disabled={isCurrent}
                                                     checked={selectedId === technician.userId}
                                                     onChange={() => {
@@ -144,7 +149,7 @@ export function TechnicianPickerDialog({
                                                 />
                                                 <span className="min-w-0 flex-1">
                                                     <span className="flex flex-wrap items-center gap-2">
-                                                        <span className="truncate text-sm font-medium">{technician.fullName}</span>
+                                                        <span className="truncate text-[14.5px] font-medium">{technician.fullName}</span>
                                                         <AvailabilityBadge status={technician.status} />
                                                     </span>
                                                     <RosterDetail technician={technician} isCurrent={isCurrent} />
@@ -166,21 +171,22 @@ export function TechnicianPickerDialog({
                             <Textarea id="reassign-reason" rows={2} value={reassignReason} onChange={(event) => setReassignReason(event.target.value)} />
                         </Field>
                     )}
-                    {submitError && <p className="text-sm text-red-600 dark:text-red-400">{submitError}</p>}
+                    {submitError && <p className="text-[12.5px] text-red-600 dark:text-red-400">{submitError}</p>}
 
                     {/* Busy/Off-duty: Assign is replaced by a deliberate, recorded Override. */}
                     {needsOverride ? (
                         <Button
                             variant="outline"
-                            className="w-full border-orange-700 text-orange-700 hover:bg-orange-700/10 hover:text-orange-700"
+                            size="lg"
+                            className="w-full border-[#D84315] text-[#D84315] hover:bg-[#D84315]/10 hover:text-[#D84315] dark:border-[#FF8A65] dark:text-[#FF8A65] dark:hover:text-[#FF8A65]"
                             disabled={isSubmitting}
                             onClick={startOverride}
                         >
-                            {isSubmitting ? <LoaderCircle className="animate-spin" /> : <TriangleAlert />}
+                            {isSubmitting ? <LoaderCircle className="animate-spin" /> : <MdWarningAmber />}
                             Override: {availabilityLabel(selected.status).toLowerCase()}
                         </Button>
                     ) : (
-                        <Button className="w-full" disabled={isSubmitting || selected === null} onClick={() => assign()}>
+                        <Button size="lg" className="w-full" disabled={isSubmitting || selected === null} onClick={() => assign()}>
                             {isSubmitting && <LoaderCircle className="animate-spin" />}
                             {selected === null ? 'Select a technician' : `Assign to ${selected.fullName}`}
                         </Button>
@@ -220,7 +226,7 @@ function RosterDetail({ technician, isCurrent }: { technician: TechnicianAvailab
     ];
 
     return (
-        <span className="text-muted-foreground block text-xs">
+        <span className="text-muted-foreground mt-0.5 block text-xs leading-relaxed">
             {lines.length === 0 ? 'No open tickets' : lines.map((line) => <span key={line} className="block">{line}</span>)}
         </span>
     );
@@ -235,9 +241,9 @@ function OverrideWarning({ technician }: { technician: TechnicianAvailability })
             : `${technician.fullName} is currently working on ${work ?? 'another ticket'}.`;
 
     return (
-        <div className="rounded-lg border border-orange-700/30 bg-orange-700/10 p-3">
-            <p className="text-sm font-semibold text-orange-900 dark:text-orange-200">{text}</p>
-            <p className="text-muted-foreground mt-1 text-xs">
+        <div className="rounded-xl border border-[#D84315]/30 bg-[#D84315]/8 p-3 dark:bg-[#D84315]/15">
+            <p className="text-[13.5px] font-semibold text-[#BF360C] dark:text-[#FFAB91]">{text}</p>
+            <p className="text-muted-foreground mt-1 text-[12.5px]">
                 This will be recorded as an override and flagged in their queue and in reporting. They stay Busy and will hold both tickets.
             </p>
         </div>

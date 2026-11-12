@@ -12,7 +12,8 @@ export type IconType = React.ForwardRefExoticComponent<IconProps & React.RefAttr
 
 /** A Material Symbols Rounded icon drawn as inline SVG, coloured by `currentColor`. */
 export function createIcon(name: string, path: string): IconType {
-    const Icon = forwardRef<SVGSVGElement, IconProps>(({ size = 24, strokeWidth: _strokeWidth, className, ...props }, ref) => (
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars -- strokeWidth is accepted and dropped, so it never reaches the <svg>.
+    const Icon = forwardRef<SVGSVGElement, IconProps>(({ size = 24, strokeWidth, className, ...props }, ref) => (
         <svg
             ref={ref}
             xmlns="http://www.w3.org/2000/svg"

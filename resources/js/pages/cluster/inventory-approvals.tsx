@@ -15,7 +15,8 @@ import { inventoryRequests } from '@/lib/fuelops-api';
 import { type SharedData } from '@/types';
 import { type ClusterInventoryRequest } from '@/types/fuelops';
 import { usePage } from '@inertiajs/react';
-import { ClipboardCheck, Copy, LoaderCircle } from '@/components/icons';
+import { cn } from '@/lib/utils';
+import { ClipboardCheck, Copy, LoaderCircle, MdChevronRight, MdInventory2Outline } from '@/components/icons';
 import { useEffect, useState } from 'react';
 
 function statusTone(status: string): Tone {
@@ -50,7 +51,7 @@ export default function ClusterInventoryApprovals() {
             title="Team Requests"
             description="Fulfil your cluster's stock requests"
             back={{ href: '/dashboard', label: 'Dashboard' }}
-            width="narrow"
+            width="wide"
         >
             {!allowed ? (
                 <EmptyState
@@ -61,36 +62,52 @@ export default function ClusterInventoryApprovals() {
             ) : (
                 <QueryView
                     query={requests}
-                    empty={(list) => list.length === 0 && <EmptyState icon={ClipboardCheck} title="No pending requests from your team." />}
+                    empty={(list) => list.length === 0 && <EmptyState icon={MdInventory2Outline} title="No pending requests from your team." />}
                 >
                     {(list) => (
-                        <ul className="space-y-3">
+                        <ul className="grid items-start gap-3 md:grid-cols-2 xl:grid-cols-3">
                             {list.map((request) => {
                                 const canAct = request.status === 'PENDING' || request.status === 'APPROVED';
+                                const Card = canAct ? 'button' : 'div';
                                 return (
-                                    <li key={request.ticketNumber} className="bg-card rounded-xl border p-4 shadow-xs">
-                                        <div className="flex items-start justify-between gap-2">
-                                            <span className="font-semibold">{request.itemName}</span>
-                                            <Pill tone={statusTone(request.status)}>{request.status}</Pill>
-                                        </div>
-                                        <p className="text-muted-foreground mt-1 text-sm">
-                                            {request.requesterName} · requested {request.quantityRequested}
-                                            {request.quantityApproved != null && ` · approved ${request.quantityApproved}`}
-                                        </p>
-                                        {request.reason && <p className="text-muted-foreground mt-1 text-sm italic">{request.reason}</p>}
-                                        {request.collectionCode && (
-                                            <p className="mt-1 text-sm">
-                                                Collection code <span className="font-mono font-semibold">{request.collectionCode}</span>
-                                                {request.collectionStatus && ` · ${request.collectionStatus}`}
-                                            </p>
-                                        )}
-                                        {canAct && (
-                                            <div className="mt-3 flex justify-end">
-                                                <Button size="sm" onClick={() => open(request)}>
+                                    <li key={request.ticketNumber}>
+                                        <Card
+                                            type={canAct ? 'button' : undefined}
+                                            onClick={canAct ? () => open(request) : undefined}
+                                            className={cn(
+                                                'bg-card shadow-card block w-full rounded-[14px] border p-3.5 text-left',
+                                                canAct &&
+                                                    'hover:border-primary/40 focus-visible:ring-primary transition-colors focus-visible:ring-2 focus-visible:outline-none',
+                                            )}
+                                        >
+                                            <span className="flex items-start justify-between gap-2">
+                                                <span className="text-brand-ink min-w-0 text-sm leading-snug font-semibold dark:text-white">
+                                                    {request.itemName}
+                                                </span>
+                                                <Pill tone={statusTone(request.status)} className="rounded-full px-2 py-[3px] text-[10px] font-semibold">
+                                                    {request.status}
+                                                </Pill>
+                                            </span>
+                                            <span className="text-muted-foreground mt-1 block text-xs">
+                                                {request.requesterName} · requested {request.quantityRequested}
+                                                {request.quantityApproved != null && ` · approved ${request.quantityApproved}`}
+                                            </span>
+                                            {request.reason && (
+                                                <span className="text-muted-foreground/80 mt-1 block text-[11px] italic">{request.reason}</span>
+                                            )}
+                                            {request.collectionCode && (
+                                                <span className="mt-1.5 block text-xs">
+                                                    Collection code <span className="font-mono font-semibold">{request.collectionCode}</span>
+                                                    {request.collectionStatus && ` · ${request.collectionStatus}`}
+                                                </span>
+                                            )}
+                                            {canAct && (
+                                                <span className="text-primary mt-2 flex items-center gap-0.5 text-[11px] font-semibold dark:text-[#64B5F6]">
                                                     {request.status === 'PENDING' ? 'Approve or reject' : 'Issue'}
-                                                </Button>
-                                            </div>
-                                        )}
+                                                    <MdChevronRight className="size-4" />
+                                                </span>
+                                            )}
+                                        </Card>
                                     </li>
                                 );
                             })}
@@ -138,8 +155,10 @@ export default function ClusterInventoryApprovals() {
                             {issued?.quantityApproved ?? ''} x {issued?.itemName} issued to {issued?.requesterName}.
                         </DialogDescription>
                     </DialogHeader>
-                    <p className="text-center font-mono text-3xl font-bold tracking-widest select-all">{issued?.collectionCode}</p>
-                    <p className="text-muted-foreground text-sm">
+                    <p className="bg-primary/8 text-brand-ink dark:bg-primary/20 rounded-[14px] py-4 text-center text-[26px] font-bold tracking-[3px] select-all dark:text-white">
+                        {issued?.collectionCode}
+                    </p>
+                    <p className="text-muted-foreground text-xs">
                         The code has been sent to {issued?.requesterName}. They give it to the FMS attendant at the station to collect the items.
                     </p>
                     <DialogFooter className="gap-2">
@@ -234,7 +253,7 @@ function DecisionDialog({
                     <Textarea id="approve-note" rows={2} value={note} onChange={(event) => setNote(event.target.value)} />
                 </Field>
                 {error && <p className="text-sm text-red-600 dark:text-red-400">{error}</p>}
-                <DialogFooter className="gap-2">
+                <DialogFooter className="grid grid-cols-2 gap-3 sm:grid-cols-2">
                     <Button variant="outline" disabled={busy !== null} onClick={() => decide('reject')}>
                         {busy === 'reject' && <LoaderCircle className="animate-spin" />}
                         Reject

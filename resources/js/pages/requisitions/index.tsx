@@ -1,15 +1,13 @@
-import { TicketTypeTag } from '@/components/dispatch/chips';
 import { Page } from '@/components/fuelops/page';
 import { Pill } from '@/components/fuelops/pill';
-import { StatCard } from '@/components/fuelops/stat-card';
-import { EmptyState, QueryView } from '@/components/fuelops/states';
+import { EmptyState, ErrorState, LoadingState } from '@/components/fuelops/states';
+import { type IconType, MdAdd, MdCheckCircle, MdFlagOutline, MdHourglassTop, MdInventory2, MdInventory2Outline, RefreshCw } from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import { useApiQuery } from '@/hooks/use-api-query';
 import { timeAgo, type Tone } from '@/lib/format';
 import { requisitions } from '@/lib/fuelops-api';
 import { type CctvRequisition } from '@/types/fuelops';
 import { Link } from '@inertiajs/react';
-import { CircleCheck, ClipboardList, Flag, Hourglass, Plus, RefreshCw, Video } from '@/components/icons';
 
 const APPROVED_STATUSES = ['approved', 'issued', 'completed'];
 
@@ -21,12 +19,26 @@ export function requisitionStatusTone(status: string): Tone {
             return 'green';
         case 'pending':
         case 'in_review':
-            return 'amber';
+            return 'orange';
         case 'rejected':
         case 'cancelled':
             return 'red';
         default:
             return 'blue';
+    }
+}
+
+/** The phone's requisition status colours, used for the card strip and tracker accents. */
+export function requisitionStatusColor(status: string): string {
+    switch (requisitionStatusTone(status)) {
+        case 'green':
+            return '#66BB6A';
+        case 'orange':
+            return '#FFA726';
+        case 'red':
+            return '#EF4444';
+        default:
+            return '#2196F3';
     }
 }
 
@@ -50,82 +62,117 @@ export default function RequisitionsIndex() {
         <Page
             title="Requisition"
             description={
-                all.length === 0 ? 'No requisitions yet' : `${all.length} submitted${pendingCount > 0 ? ` · ${pendingCount} pending` : ''}`
+                list.data === undefined
+                    ? undefined
+                    : all.length === 0
+                      ? 'No requisitions yet'
+                      : `${all.length} submitted${pendingCount > 0 ? ` · ${pendingCount} pending` : ''}`
             }
             actions={
-                <>
-                    <Button variant="outline" size="sm" onClick={list.reload} disabled={list.isFetching}>
-                        <RefreshCw className={list.isFetching ? 'animate-spin' : undefined} /> Refresh
-                    </Button>
-                    <Button size="sm" asChild>
-                        <Link href="/requisitions/create">
-                            <Plus /> New Requisition
-                        </Link>
-                    </Button>
-                </>
+                <Button variant="outline" size="sm" onClick={list.reload} disabled={list.isFetching}>
+                    <RefreshCw className={list.isFetching ? 'animate-spin' : undefined} /> Refresh
+                </Button>
             }
         >
-            <QueryView
-                query={list}
-                empty={(data) =>
-                    data.length === 0 && (
+            {list.isLoading ? (
+                <LoadingState rows={4} className="grid gap-3 space-y-0 lg:grid-cols-2" />
+            ) : list.data === undefined ? (
+                <ErrorState
+                    title="Couldn't load requisitions"
+                    message={list.error ?? 'Check your connection and try again.'}
+                    onRetry={list.reload}
+                    className="flex-1 justify-center"
+                />
+            ) : (
+                <>
+                    {list.error && <ErrorState title="Couldn't load requisitions" message={list.error} onRetry={list.reload} className="py-4" />}
+                    {all.length === 0 ? (
                         <EmptyState
-                            icon={Video}
+                            icon={MdInventory2Outline}
                             title="No requisitions yet"
-                            description="Request CCTV and network equipment for a job."
-                            action={
-                                <Button asChild>
-                                    <Link href="/requisitions/create">
-                                        <Plus /> New Requisition
-                                    </Link>
-                                </Button>
-                            }
+                            description={'Tap "New Requisition" below to submit your first CCTV or network equipment request.'}
+                            className="flex-1 justify-center"
                         />
-                    )
-                }
-            >
-                {(data) => (
-                    <div className="space-y-4">
-                        <div className="grid grid-cols-3 gap-3">
-                            <StatCard label="Total" value={data.length} icon={ClipboardList} accent="text-primary" />
-                            <StatCard label="Pending" value={pendingCount} icon={Hourglass} accent="text-amber-600" />
-                            <StatCard label="Approved" value={approvedCount} icon={CircleCheck} accent="text-green-600" />
+                    ) : (
+                        <div className="space-y-4 pb-20 lg:pb-16">
+                            <div className="grid grid-cols-3 gap-2 sm:gap-3">
+                                <RequisitionStatCard icon={MdInventory2} label="Total" value={all.length} color="#2178BD" />
+                                <RequisitionStatCard icon={MdHourglassTop} label="Pending" value={pendingCount} color="#FFA726" />
+                                <RequisitionStatCard icon={MdCheckCircle} label="Approved" value={approvedCount} color="#66BB6A" />
+                            </div>
+                            <ul className="grid gap-3 lg:grid-cols-2">
+                                {all.map((requisition) => (
+                                    <li key={requisition.requisitionId || requisition.reqNo}>
+                                        <RequisitionCard requisition={requisition} />
+                                    </li>
+                                ))}
+                            </ul>
                         </div>
-                        <ul className="space-y-3">
-                            {data.map((requisition) => (
-                                <li key={requisition.requisitionId || requisition.reqNo}>
-                                    <RequisitionCard requisition={requisition} />
-                                </li>
-                            ))}
-                        </ul>
-                    </div>
-                )}
-            </QueryView>
+                    )}
+                </>
+            )}
+
+            {/* The phone's extended FAB, lifted above the bottom tab bar on small screens. */}
+            <Link
+                href="/requisitions/create"
+                className="bg-primary hover:bg-primary/90 fixed right-4 bottom-[calc(108px+env(safe-area-inset-bottom))] z-30 inline-flex h-14 items-center gap-2 rounded-2xl pr-5 pl-4 text-sm font-semibold text-white shadow-[0_6px_16px_rgb(33_120_189/0.35)] transition-colors lg:right-8 lg:bottom-8"
+            >
+                <MdAdd className="size-6" />
+                New Requisition
+            </Link>
         </Page>
+    );
+}
+
+function RequisitionStatCard({ icon: Icon, label, value, color }: { icon: IconType; label: string; value: number; color: string }) {
+    return (
+        <div className="bg-card shadow-card flex min-w-0 items-center gap-2 rounded-[14px] border p-3 sm:gap-3 sm:p-4">
+            <span
+                className="relative flex size-8 shrink-0 items-center justify-center overflow-hidden rounded-[10px] sm:size-10 sm:rounded-xl"
+                style={{ color }}
+            >
+                <span className="absolute inset-0 bg-current/12 dark:bg-current/20" aria-hidden="true" />
+                <Icon className="relative size-4 sm:size-5" />
+            </span>
+            <span className="min-w-0">
+                <span className="text-foreground block text-base leading-none font-bold sm:text-xl">{value}</span>
+                <span className="text-muted-foreground mt-0.5 block truncate text-[10px] font-medium sm:text-xs">{label}</span>
+            </span>
+        </div>
     );
 }
 
 function RequisitionCard({ requisition }: { requisition: CctvRequisition }) {
     const itemCount = requisition.items.length;
+    const dateLabel = requisition.createdAt ? timeAgo(requisition.createdAt) : requisition.dateOfRequest;
     return (
-        <Link href={detailHref(requisition)} className="bg-card hover:bg-accent block rounded-xl border p-4 shadow-xs transition-colors">
-            <div className="flex flex-wrap items-center gap-2">
-                <TicketTypeTag type="cctv-requisition" />
-                <span className="flex-1 truncate font-semibold">{requisition.reqNo || 'Requisition'}</span>
-                <Pill tone={requisitionStatusTone(requisition.status)}>{requisitionStatusLabel(requisition.status)}</Pill>
-            </div>
-            <div className="text-muted-foreground mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs">
-                <span>
-                    {itemCount} item{itemCount === 1 ? '' : 's'}
+        <Link
+            href={detailHref(requisition)}
+            className="bg-card shadow-card hover:border-primary/30 flex h-full overflow-hidden rounded-2xl border transition-colors"
+        >
+            <span className="w-1 shrink-0" style={{ backgroundColor: requisitionStatusColor(requisition.status) }} aria-hidden="true" />
+            <span className="block min-w-0 flex-1 p-3.5">
+                <span className="flex items-center gap-2">
+                    <span className="text-foreground min-w-0 flex-1 truncate text-[14.5px] font-bold">{requisition.reqNo || 'Requisition'}</span>
+                    <Pill tone={requisitionStatusTone(requisition.status)} className="text-[10.5px]">
+                        {requisitionStatusLabel(requisition.status)}
+                    </Pill>
                 </span>
-                {requisition.priority && (
-                    <span className="inline-flex items-center gap-1">
-                        <Flag className="size-3" /> {requisition.priority}
+                <span className="text-muted-foreground mt-2 flex items-center gap-1 text-xs">
+                    <MdInventory2Outline className="size-[13px] shrink-0" />
+                    <span>
+                        {itemCount} item{itemCount === 1 ? '' : 's'}
                     </span>
-                )}
-                {requisition.createdAt && <span>{timeAgo(requisition.createdAt)}</span>}
-            </div>
-            {requisition.jobRef && <p className="text-muted-foreground mt-1 text-xs">Job ref: {requisition.jobRef}</p>}
+                    {requisition.priority && (
+                        <>
+                            <MdFlagOutline className="ml-2.5 size-[13px] shrink-0" />
+                            <span className="truncate">{requisition.priority}</span>
+                        </>
+                    )}
+                    {dateLabel && <span className="text-muted-foreground/80 ml-auto shrink-0 pl-2 text-[11.5px]">{dateLabel}</span>}
+                </span>
+                {requisition.jobRef && <span className="text-muted-foreground/80 mt-1.5 block text-[11.5px]">Job ref: {requisition.jobRef}</span>}
+            </span>
         </Link>
     );
 }
