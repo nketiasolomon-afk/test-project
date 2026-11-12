@@ -115,9 +115,10 @@ export default function Dashboard() {
                 ];
 
     // Quick Access mirrors the phone's Home: the modules without a bottom tab, grouped like the side menu.
-    const tabUrls = ['/dashboard', '/location', '/profile', '/notifications'];
+    // Special Assignments and Compliance stay reachable from the side menu and the Tickets page.
+    const hiddenFromQuickAccess = ['/dashboard', '/location', '/profile', '/notifications', '/special-assignments', '/compliance'];
     const groups = moduleGroupsFor(user)
-        .map((group) => ({ ...group, items: group.items.filter((item) => !tabUrls.includes(item.url)) }))
+        .map((group) => ({ ...group, items: group.items.filter((item) => !hiddenFromQuickAccess.includes(item.url)) }))
         .filter((group) => group.items.length > 0);
     const clusterGroup = groups.find((group) => group.title === 'Cluster');
     const quickAccess = groups.filter((group) => group !== clusterGroup).flatMap((group) => group.items);
